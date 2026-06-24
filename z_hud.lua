@@ -203,13 +203,20 @@ function on_hud_render()
 			x = (screenWidth - width2) / 2
 			djui_hud_print_text_with_color_and_outline(text2, x, y, scale)
 		end
+		local excluded_g = {
+			[GAME_MODE_BOMB_TAG] = true,
+			[GAME_MODE_DICE] = true,
+		}
 		local lbStandings = get_standings_table("roundScore")
 		local gData = GAME_MODE_DATA[gGlobalSyncTable.gameMode]
+		local excluded = excluded_g[gGlobalSyncTable.gameMode] == true
 		local hasScores = false
-		for i, data in ipairs(lbStandings) do
-			if (data[2] or 0) ~= 0 or (gData.mercyRuleScale ~= nil) then
-				hasScores = true
-				break
+		if not excluded and gData then
+			for i, data in ipairs(lbStandings) do
+				if (data[2] or 0) ~= 0 then
+					hasScores = true
+					break
+				end
 			end
 		end
 
