@@ -206,6 +206,7 @@ function on_hud_render()
 		local excluded_g = {
 			[GAME_MODE_BOMB_TAG] = true,
 			[GAME_MODE_DICE] = true,
+			[GAME_MODE_DUEL] = true,
 		}
 		local lbStandings = get_standings_table("roundScore")
 		local gData = GAME_MODE_DATA[gGlobalSyncTable.gameMode]
