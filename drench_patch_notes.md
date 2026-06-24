@@ -1,0 +1,119 @@
+v1.2 (WIP)
+- NEW GAMES!
+    - Dice Block Battle: Takes place on the same maps as Star Steal and Bomb Tag. You have a 5% chance to kill, but your odds increase for every failed kill and every time you survive a roll. Be the last one standing to win!
+        - Also contains a new music track by Murioz, who also created many of the other music tracks
+        - TODO: Points based on placement (TO TEST)
+- New Features:
+    - Added indicators for which players moved on the leaderboard (like in Mario Kart)
+    - Added a Music toggle, usable by all players (The setting "Mingle Only" only plays the Mingle track)
+    - Added the option to include All Player Duel in random game selection
+- Gameplay Changes:
+    - All minigames have been shortened. In a full lobby, most games will last 3 minutes at most, with these exceptions:
+        - Red Light, Green Light: Max time is now 2 minutes instead of 3 minutes.
+        - Star Steal: The first round is 1:30, so the minigame will last 3:30 at most with 5 rounds.
+        - Duel: A tiebreaker round occurs after 5 rounds. Therefore, an all-player duel will last ~7 minutes at most rather than going on indefinitely.
+    - Elimination logic for round-based games (Bomb Tag, Star Steal, and King Of The Hill) has been changed to make sure they last for exactly the amount of rounds chosen
+    - "Disable CS Movesets" was removed, as Character Select has the option on its own now
+    - "Random" selection shouldn't pick the same minigame twice in a row anymore, and it will shuffle through all minigames (except Duel) before picking the duplicates
+    - Changing minigame selection to "All" mid-game will now automatically set the max minigame amount.
+    - The default minigame selection is now set to "Random" with 5 minigames instead of "All".
+        - Note that "Final Duel" is still on by default, meaning the last game will always be a Duel between the top two players.
+        - FOR HEADLESS SERVERS: If you'd like to adjust game settings, update your mod storage (easiest way is to manually load Drench Game, change the settings as the host, and then transfer that storage to your server). If that doesn't work, you can edit main.lua directly, but be careful!
+    - Changed elimination calculation for round-based games in Elimination Mode so minigames won't always end after one round.
+    - In Team Mode, when a player disconnects, their points are distributed across their remaining teammates so that their team won't lose points overall.
+    - Support has been added for Sonic in Extra Characters Plus. Note that he'll have to use the Slow Down boots in some games.
+    - Glass Bridge:
+        - Players will be eliminated after not making progress every 20 seconds instead of every 30 seconds (for the first round, it's 10 seconds).
+        - Reduced knockback by half
+        - You can now ledge grab the glass panes
+    - Red Light, Green Light
+        - Adjusted points a bit; players who fail to reach the end can only earn 15 points max (still based on distance), and players who reach the end will still receive 20.
+        - Toad's eye level was moved down by 200 units, and the position checked for was moved down by 20 units. This means it should be much easier to hide behind objects.
+        - Toad kills players 7 frames after fully turning around instead of only 5.
+    - Star Steal and King Of The Hill:
+        - (Star Steal Only): The first round is now 1 minute and 30 seconds instead of 2 minutes.
+        - Points are now counted in tenths of a second instead of whole seconds.
+        - You can no longer be more than 20 points ahead. Your score will stop increasing at that point.
+        - If there's two players left and one of the players is too far behind to possibly win (under 20 points, but less than 20 seconds left), the game will end immediately.
+    - Bomb Tag:
+        - Players holding a bomb now move 10% faster.
+        - Instead of between 1-2 bombs being assigned at random, bombs are assigned based on player count.
+        - Bombs are now assigned to whichever players have the least amount of time with the bomb.
+        - Respawning while not holding a bomb now puts you in a hard knockback action in which you can be hit.
+    - Mingle:
+        - Numbers can be called sooner after round 1.
+        - When there is only 1:30 left, numbers will be called more quickly.
+    - Lights Out:
+        - You earn a point for every 2 damage dealt instead of 4.
+        - Made chains a bit more slippery so you can't camp on them as easily.
+    - Duel:
+        - Team games are now Best of 3 instead of Best of 5.
+        - Final Duel can now be selected with 2 teams, but ONLY if Elimination Mode is enabled.
+- Visual Changes:
+    - The sidebar now displays "Elimination Mode" when... playing in Elimination Mode.
+    - When playing with uneven teams, points are adjusted AFTER the "[Player] wins!" message to make the message reflect the actual winner(s).
+    - When spectating a player, the top of the screen will now display their score and the safe score in KOTH and Star Steal.
+    - Red Light, Green Light:
+        - Added a visual indicator for Toad's eyesight.
+    - Mingle:
+        - Adjusted the description to hopefully make the objective more clear.
+    - Lights Out:
+        - Eliminated players can now see the health of the remaining players.
+    - Duel:
+        - When setting up a Duel game, "Select All Players" was changed to "All Player Duel" and is now highlighted in yellow.
+            - In addition, "Confirm Duelers" was changed to green.
+        - Players with full health will now have a sparkly trail.
+        - "Sudden Death!" is now displayed on the sidebar when Sudden Death is active.
+        - Changed the description to provide more information.
+- Bug Fixes:
+    - Removed an exploit to grant your team multiplied points
+    - Fixed players sometimes earning way more points than they should
+    - Fixed players becoming invincible if too many players spectate them (also fixed by Coop itself)
+    - Fixed rejoining often causing elimination even if you rejoin on the same exact round
+    - Fixed rejoining not working if you rejoin before you're marked as disconnected
+    - Fixed Final Duel with teams picking two people on the same team
+    - Fixed the ending only showing one player from the winning team of a Final Duel
+    - Fixed new players sometimes being un-eliminated by default, causing the music in certain minigames to briefly change
+    - Fixed player spawn positions sometimes not being synced between players (NOT FIXED!!!)
+    - More desyncs will be corrected automatically; you can also use the /desync command (host or moderator only) to fix problems
+    - Fixed some collision issues on Toad Town and Koopa Keep
+    - Fixed Random game selection sometimes skipping certain modes
+    - Glass Bridge:
+        - Fixed a bug where spectating a falling player after reaching the end could cause you to lose as well
+    - Mingle:
+        - Fixed being able to ledge grab the doors to avoid dying during the carousel phase.
+- Backend Changes
+    - The sound folder was reduced by over 20 MB!!!
+        - This was done by compressing/trimming the gigantic audio files (THANK YOU SQUISHY!!!)
+- TODO:
+    - Misc:
+        - Timer options: I think a per round time and number of rounds will be enough. Duels can also have best of setting
+        - More Star Steal/Bomb Tag maps?
+            - Gamble Gallery: Similar theming to Glass Bridge with dice and card obstacles (also like that old sticker star screenshot)
+        - I did random 8 games and it picked KOTH twice? Look into this (FIXED?)
+        - No points earned when playing All Duel on bizzare's stream (prob also desync)
+        - Test Elimination Mode a bit more, especially with dice block battle (SEEMS GOOD)
+        - PRIORITY: Players are reviving in certain games now? Seen on RLGL and Lights Out (maybe fixed?)
+        - Toad town has a wall that's hard to see near the 1up house
+        - Fix wonky points in teams all-duel
+        - Make camping on the spire in Koopa Keep less OP
+    - API? (probably not to add more games tho)
+    - Mingle:
+        - Are the amount of doors calculated correctly? (No)
+    - King Of The Hill:
+        - Maybe move the cloud a bit to make that jump easier
+        - Collision is also pretty jank still
+        - More routes/platforming (I suck at blender though, idk what I'm going to do about this)
+    - Lights Out:
+        - Possible bug where you can stay on chains forever (fixed?)
+    - NEW GAMES??? (maybe)
+        - Island game from crab game I can't remember the name of: Pretty similar to Hexagon Heat. Avoid the sinking platforms!
+        - Sugar Honeycombs/Dalgona: Similar to Crazy Cutters. Trace with feet, or with a jackhammer? Also want player interaction somehow
+            - Also keyboard players exist :/ maybe they could play with the mouse?
+        - Cannon game (TheIncredibleHolc's idea): Shoot target with cannon to get points. Furthest dies? (idk about this one)
+
+v1.1
+- Attacking your teammates in Lights Out will no longer give points, and killing your teammates in Duels will no longer count as your kill, meaning you won't get a full heal.
+- Fixed all players earning points in Free-for-All duels, as if they were on the same team
+- Fixed scoreboard in Team duels not displaying correcting in some situations
+- Added a failsafe if a player is in the timer state for longer than expected, hopefully preventing players from getting stuck
