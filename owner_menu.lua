@@ -1330,7 +1330,7 @@ function on_mario_update(m)
 	local combo = is_button_combo_pressed(m.controller, X_BUTTON, Y_BUTTON, Z_TRIG)
 
 	if combo and not last_admin_combo then
-		if not network_is_server() or network_is_moderator() then
+		if not network_is_server() and not network_is_moderator() then
 			return
 		end
 		if admin_open then
