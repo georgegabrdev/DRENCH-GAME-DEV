@@ -562,7 +562,6 @@ GAME_MODE_DATA = {
 							o.oVelY = -50
 							o.oMoveAngleYaw = math.random(0, 0xFFFF)
 						end, true)
-						create_warning_popup("Falling bombs are spawning!")
 						if duelTimeUntilBomb > 5 then
 							duelTimeUntilBomb = duelTimeUntilBomb - 1
 						end
