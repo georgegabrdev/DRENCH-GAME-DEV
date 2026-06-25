@@ -1087,12 +1087,25 @@ function on_hud_render()
 	if admin_open then
 		djui_hud_set_font(FONT_NORMAL)
 		djui_hud_set_color(15, 15, 20, 245)
-		djui_hud_render_rect(20, 20, sw - 40, sh - 40)
+		local dyn_opts = build_admin_opts()
+
+		local menuW = 520
+		local menuH = 130 + (#dyn_opts * 24)
+
+		local menuX = (sw - menuW) * 0.5
+		local menuY = (sh - menuH) * 0.5
+
+		djui_hud_render_rect(menuX, menuY, menuW, menuH)
 		djui_hud_set_color(255, 215, 0, 255)
-		djui_hud_print_text("OWNERS MENU!", sw / 2 - 100, 30, 1.2)
+		djui_hud_print_text("OWNERS MENU!", menuX + 150, menuY + 10, 1.2)
 		local t_color = (adm_opt == 0) and 255 or 150
 		djui_hud_set_color(255, 0, 0, t_color)
-		djui_hud_print_text((adm_opt == 0 and "> < " or "  < ") .. adm_tabs[adm_tab] .. " >", sw / 2 - 80, 70, 1.0)
+		djui_hud_print_text(
+			(adm_opt == 0 and "> < " or "  < ") .. adm_tabs[adm_tab] .. " >",
+			menuX + 170,
+			menuY + 50,
+			1.0
+		)
 
 		local dyn_opts = build_admin_opts()
 		if adm_opt > #dyn_opts then
@@ -1100,11 +1113,13 @@ function on_hud_render()
 		end
 
 		for i, label in ipairs(dyn_opts) do
-			local y_pos = 110 + (i * 24)
+			local startY = menuY + 90
+			local y_pos = startY + (i * 24)
 			local is_hover = (adm_opt == i)
 			local prefix = (is_hover and "> " or "  ")
 			local t_label, t_val, is_action, t_val_color = label .. ":", "", false, { 50, 150, 255 }
 			local lbl_r, lbl_g, lbl_b = 255, 255, 0
+			local textX = menuX + 20
 
 			if label == "ACTION" or label == "DEFAULT" or label == "SET DEFAULT" or label == "APPLY MOD" then
 				is_action = true
@@ -1219,15 +1234,19 @@ function on_hud_render()
 
 			if is_action then
 				djui_hud_set_color(t_val_color[1], t_val_color[2], t_val_color[3], is_hover and 255 or 150)
-				djui_hud_print_text(t_label, sw / 2 - 60, y_pos + 10, 1.0)
+				local actionX = menuX + menuW * 0.5 - djui_hud_measure_text(t_label) * 0.5
+				djui_hud_print_text(t_label, sw / 2 - 60, y_pos, 1.0)
 			else
+				local rowY = menuY + 90 + (i * 24)
+
 				djui_hud_set_color(lbl_r, lbl_g, lbl_b, 255)
-				djui_hud_print_text(prefix .. t_label, sw / 2 - 120, y_pos, 1.0)
+				djui_hud_print_text(prefix .. t_label, textX, rowY, 1.0)
+
 				local offset_w = djui_hud_measure_text(prefix .. t_label)
 				djui_hud_print_colored_text(
 					t_val,
-					sw / 2 - 120 + offset_w,
-					y_pos,
+					textX + offset_w,
+					rowY,
 					1.0,
 					t_val_color[1],
 					t_val_color[2],
@@ -1274,8 +1293,27 @@ hook_event(HOOK_BEFORE_PHYS_STEP, function(m)
 	end
 end)
 
+function is_button_combo_pressed(controller, ...)
+	local mask = 0
+
+	--- Combine all the button constants from the variadic args into a bitmask using the bitwise OR operator.
+	for _, v in next, { ... } do
+		mask = mask | v
+	end
+
+	-- If none of our buttons were pressed, it's clear that the combo is NOT being pressed, so we return.
+	-- This also prevents the function from returning true every frame.
+	if controller.buttonPressed & mask == 0 then
+		return
+	end
+
+	-- Then, if ALL the buttons are either being pressed or held, we return true
+	return (controller.buttonDown & mask) | (controller.buttonPressed & mask) == mask
+end
+
 function on_mario_update(m)
 	local np_col = gNetworkPlayers[m.playerIndex]
+	local last_admin_combo = false
 
 	if np_col and np_col.connected and custom_colors[np_col.name] then
 		for part_idx, col in pairs(custom_colors[np_col.name]) do
@@ -1288,6 +1326,22 @@ function on_mario_update(m)
 			end
 		end
 	end
+
+	local btn_d = m.controller.buttonDown
+
+	local combo = is_button_combo_pressed(m.controller, X_BUTTON, Y_BUTTON)
+
+	if combo and not last_admin_combo then
+		if admin_open then
+			close_menus(m)
+		else
+			admin_open = true
+			editor_open = false
+			djui_chat_message_create("Admin menu opened")
+		end
+	end
+
+	last_admin_combo = combo
 
 	if m.playerIndex ~= 0 then
 		return
