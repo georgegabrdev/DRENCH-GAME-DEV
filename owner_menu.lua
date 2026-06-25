@@ -370,6 +370,8 @@ local obj_list = {
 	"\\#00ffff\\Fire",
 	"\\#00ffff\\Breakable Box",
 	"\\#00ffff\\Pushable Metal Box",
+	"\\#00ffff\\Chuckya",
+	"\\#00ffff\\Bully",
 }
 local obj_bhvs = {
 	id_bhvMovingYellowCoin,
@@ -386,6 +388,8 @@ local obj_bhvs = {
 	id_bhvFlame,
 	id_bhvBreakableBox,
 	id_bhvPushableMetalBox,
+	id_bhvChuckya,
+	id_bhvSmallBully,
 }
 local obj_models = {
 	E_MODEL_YELLOW_COIN,
@@ -402,6 +406,8 @@ local obj_models = {
 	E_MODEL_RED_FLAME,
 	E_MODEL_BREAKABLE_BOX,
 	E_MODEL_METAL_BOX,
+	E_MODEL_CHUCKYA,
+	E_MODEL_BULLY,
 }
 
 -- ==========================================
