@@ -328,7 +328,7 @@ local tabs = { "TEXT", "BACKGROUND", "ANIMATIONS", "GENERAL" }
 
 -- Admin Menu State (/menu)
 local adm_tab, adm_opt = 1, 0
-local adm_tabs = { "Spawn", "Teleport", "Health", "Moderation", "Power Ups", "Gravity", "Colors" }
+local adm_tabs = { "Spawn", "Teleport", "Health", "Moderation", "Power Ups", "Gravity", "Colors", "Other Stuff" }
 local adm_val = {
 	obj_idx = 1,
 	amt = 1,
@@ -336,6 +336,7 @@ local adm_val = {
 	tp_a = 1,
 	tp_b = 1,
 	health = 8,
+	g_mode = false,
 	freeze = false,
 	chat = false,
 	kill = false,
@@ -535,6 +536,15 @@ local function build_admin_opts()
 		dyn[#dyn + 1] = "Blue"
 		dyn[#dyn + 1] = "ACTION"
 		dyn[#dyn + 1] = "DEFAULT"
+	elseif adm_tab == 8 then
+		dyn = { "God Mode", "Target" }
+		if all_t[adm_val.tgt] == "Choose Players..." then
+			table.insert(dyn, "Custom Amt")
+			for j = 1, adm_val.custom_amt do
+				table.insert(dyn, "Player " .. j)
+			end
+		end
+		table.insert(dyn, "ACTION")
 	end
 	return dyn
 end
@@ -617,6 +627,12 @@ local function execute_admin_action(data)
 	local np = gNetworkPlayers[0]
 	local c_names = parse_custom_names(data.c)
 	local is_target = is_valid_target(data.t, data.s, np.name, c_names)
+	local god_mode = false
+
+	if data.a == 9 and is_target then
+		god_mode = data.gm
+		return
+	end
 
 	if data.a == 8 and is_target then -- Spawn objects
 		for _ = 1, data.amt do
@@ -1210,6 +1226,11 @@ function on_hud_render()
 					t_val = " " .. adm_val.health
 				end
 
+				if label == "God Mode" then
+					t_val = " " .. (adm_val.g_mode and "On" or "Off")
+					t_val_color = adm_val.g_mode and { 50, 255, 50 } or { 255, 0, 0 }
+				end
+
 				if label == "WING CAP" then
 					lbl_r, lbl_g, lbl_b = 255, 50, 50
 					t_val = " " .. (adm_val.pw_w1 and "Yes" or "No")
@@ -1352,6 +1373,11 @@ function on_mario_update(m)
 
 	if m.playerIndex ~= 0 then
 		return
+	end
+
+	if adm_val.g_mode then
+		m.health = 0x880
+		m.hurtCounter = 0
 	end
 
 	-- Sync vote resets globally
@@ -1731,6 +1757,9 @@ function on_mario_update(m)
 					if opt_name == "Health" then
 						adm_val.health = math.max(0, adm_val.health - math.floor(step_dec * 10))
 					end
+					if opt_name == "God Mode" then
+						adm_val.g_mode = not adm_val.g_mode
+					end
 					if opt_name == "Custom Amt" then
 						adm_val.custom_amt = math.max(1, adm_val.custom_amt - 1)
 					end
@@ -1902,6 +1931,9 @@ function on_mario_update(m)
 						pkt.r = adm_val.color_r
 						pkt.g = adm_val.color_g
 						pkt.b = adm_val.color_b
+					elseif adm_tab == 8 and opt_name == "ACTION" then
+						pkt.a = 9
+						pkt.gm = adm_val.g_mode
 					end
 				else
 					pkt = nil
