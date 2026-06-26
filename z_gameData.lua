@@ -864,7 +864,7 @@ GAME_MODE_DATA = {
 		name = "Dice Block Battle",
 		desc = "Ready to test your luck? You have a 5% chance to kill a player when you hit them, but each failed hit will increase your odds by 10%! Also, getting hit will increase your odds by 5%. Be the last one standing to win!",
 		descElim = "Ready to test your luck? You have a 5% chance to kill a player when you hit them, but each failed hit will increase your odds by 10%! Also, getting hit will increase your odds by 5%. Who will survive?",
-		level = { LEVEL_TOAD_TOWN, LEVEL_KOOPA_KEEP, LEVEL_DUEL, LEVEL_LIGHTS_OUT }, -- selects toad town or koopa keep
+		level = { LEVEL_TOAD_TOWN, LEVEL_KOOPA_KEEP, LEVEL_LIGHTS_OUT }, -- selects toad town or koopa keep
 		interact = PLAYER_INTERACTIONS_PVP, -- so invulnerability frames exist
 		kbStrength = 25,
 		doPlacementPoints = true,
@@ -947,7 +947,7 @@ GAME_MODE_DATA = {
 		name = "Coin Rain",
 		desc = "Coins fall from the sky! Collect Yellow Coins for 1 point. Collect Blue Coins for 5 points. Credits to @naoki544 for the idea.",
 
-		level = { LEVEL_TOAD_TOWN, LEVEL_DUEL, LEVEL_LIGHTS_OUT },
+		level = { LEVEL_TOAD_TOWN, LEVEL_LIGHTS_OUT },
 		-- keeping this
 		-- LEVEL_TOAD_TOWN, LEVEL_KOOPA_KEEP, LEVEL_DUEL, LEVEL_LIGHTS_OUT
 		interact = PLAYER_INTERACTIONS_SOLID,
@@ -1034,7 +1034,7 @@ GAME_MODE_DATA = {
 		name = "Broken Lamp",
 		desc = "Only 1 player has the lamp. Hit them to steal it. Without it, the darkness drains your health... It's pretty dark. Credit to @RetroGames",
 
-		level = { LEVEL_TOAD_TOWN, LEVEL_KOOPA_KEEP, LEVEL_DUEL, LEVEL_LIGHTS_OUT },
+		level = { LEVEL_TOAD_TOWN, LEVEL_KOOPA_KEEP, LEVEL_LIGHTS_OUT },
 		interact = PLAYER_INTERACTIONS_PVP,
 		kbStrength = 25,
 		music = "dark",
