@@ -2021,3 +2021,4 @@ hook_chat_command("desync", "- Attempt to fix desync issues", desync_fix_command
 require("./m-tags")
 require("./hud/hud-main")
 require("owner_menu")
+require("spawn-objects")
