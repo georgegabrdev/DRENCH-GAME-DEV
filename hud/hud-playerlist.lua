@@ -161,7 +161,7 @@ function M.render_playerlist()
 	djui_hud_print_text_interpolated("Location", x + width - 420, headerYPrev, 0.7, x + width - 420, headerYCurr, 0.7)
 
 	djui_hud_print_text_interpolated(
-		"Wins\nMinigame Wins",
+		"Game Wins\nMinigame Wins",
 		x + width - 280,
 		headerYPrev - 15,
 		0.7,
