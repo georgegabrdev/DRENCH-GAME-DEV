@@ -952,6 +952,7 @@ menu_data = {
 			end,
 			false,
 		},
+	},
 	[2] = {
 		{
 			"Game Mode Selection",
