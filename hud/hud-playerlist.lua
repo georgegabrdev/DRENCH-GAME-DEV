@@ -96,9 +96,6 @@ function M.render_playerlist()
 			local np = gNetworkPlayers[i]
 			if np and np.connected then
 				pingCache[i] = np.ping or 0
-				if pingTimer == 0 then
-					log_to_console("Ping: " .. np.ping, 1)
-				end
 			end
 		end
 	end
