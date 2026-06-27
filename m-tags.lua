@@ -130,7 +130,17 @@ local function get_player_display_name(playerIndex)
 	local np = gNetworkPlayers[playerIndex]
 	local playerColor = network_get_player_text_color_string(playerIndex)
 	local tagStr = get_formatted_tag(playerIndex)
-	return string.format("%s%s%s", tagStr, playerColor, np.name)
+
+	if not np then
+		return ""
+	end
+
+	local name = np.name
+	if name == "Player" then
+		name = "Player " .. playerIndex
+	end
+
+	return string.format("%s%s%s", tagStr, playerColor, name)
 end
 
 local function main_update()

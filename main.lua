@@ -1555,6 +1555,21 @@ end
 
 hook_event(HOOK_ON_PLAYER_CONNECTED, on_player_connected)
 
+local function get_display_name(i)
+	local np = gNetworkPlayers[i]
+	if not np then
+		return "Unknown"
+	end
+
+	local name = np.name or "Unknown"
+
+	if name == "Player" then
+		name = "Player " .. i
+	end
+
+	return name
+end
+
 ---@param m MarioState
 function on_player_disconnected(m)
 	if gGlobalSyncTable.gameState == GAME_STATE_LOBBY or gGlobalSyncTable.gameState == GAME_STATE_GAME_END then
@@ -1575,11 +1590,6 @@ function on_player_disconnected(m)
 		roundScore = 0
 		eliminated = true
 	end
-
-	local color = network_get_player_text_color_string(m.playerIndex)
-	local name = gNetworkPlayers[m.playerIndex].name
-
-	djui_chat_message_create(color .. name .. " disconnected.")
 
 	-- In team mode, distribute points to other players on team on disconnect
 	if gGlobalSyncTable.teamCount ~= 0 and sMario.team ~= 0 then
@@ -1629,7 +1639,7 @@ function on_player_disconnected(m)
 	end
 
 	if rejoinID and ((not eliminated) or sMario.points ~= 0 or sMario.earnedPoints ~= 0 or roundScore ~= 0) then
-		local name = network_get_player_text_color_string(m.playerIndex) .. gNetworkPlayers[m.playerIndex].name
+		local name = network_get_player_text_color_string(m.playerIndex) .. get_display_name(m.playerIndex)
 		djui_chat_message_create(name .. "\\#ffff50\\ can rejoin to restore their progress.")
 		if not network_is_server() then
 			return

@@ -46,6 +46,21 @@ local hud_hints = {
 	"This audio files used to take up 23.7 MB! It took ages to download. After Squishy trimmed and compressed all of the audio, this size was reduced to just over 2.5 MB. Wow...",
 }
 
+local function get_display_name(i)
+	local np = gNetworkPlayers[i]
+	if not np then
+		return "Unknown"
+	end
+
+	local name = np.name or "Unknown"
+
+	if name == "Player" then
+		name = "Player " .. i
+	end
+
+	return name
+end
+
 function on_hud_render()
 	djui_hud_set_resolution(RESOLUTION_N64)
 	djui_hud_set_font(FONT_SPECIAL)
@@ -81,7 +96,7 @@ function on_hud_render()
 			if sMario.ready then
 				addStr = "\\#50ff50\\Ready!"
 			end
-			local name = network_get_player_text_color_string(i) .. gNetworkPlayers[i].name
+			local name = network_get_player_text_color_string(i) .. get_display_name(i)
 			name = cap_color_text(name, 18)
 			add_line_to_table(sideBarLines, name .. ": " .. addStr, lengthLimit)
 		end)
@@ -279,7 +294,7 @@ function on_hud_render()
 					djui_hud_print_text_with_color_and_outline(placeStr, lbX, lbY, lbScale / 1.2, 255, 2)
 
 					local nameColor = network_get_player_text_color_string(index)
-					local name = cap_color_text(nameColor .. np.name, 999)
+					local name = cap_color_text(nameColor .. get_display_name(index), 999)
 					djui_hud_print_text_with_color_and_outline(name, lbX + 40 * lbScale, lbY, lbScale / 1.2, 255, 2)
 
 					local scoreVal = gData.removeDecimal and string.format("%.0f", score / 10)
@@ -398,7 +413,7 @@ function on_hud_render()
 					else
 						foundWinner = true
 						text = network_get_player_text_color_string(index)
-							.. gNetworkPlayers[index].name
+							.. get_display_name(index)
 							.. "\\#ffff50\\ wins!"
 						if index == 0 and not gaveMiniWin then
 							gaveMiniWin = true
@@ -592,7 +607,7 @@ function on_hud_render()
 		for i, index in ipairs(winners) do
 			local sMario = gPlayerSyncTable[index]
 			if sMario.team == nil or sMario.team == 0 or sMario.team > #TEAM_DATA then
-				local text = network_get_player_text_color_string(index) .. gNetworkPlayers[index].name
+				local text = network_get_player_text_color_string(index) .. get_display_name(index)
 				table.insert(names, text)
 			elseif not teamCounted[sMario.team] then
 				teamCounted[sMario.team] = 1

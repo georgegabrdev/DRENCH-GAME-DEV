@@ -68,6 +68,21 @@ local function get_active_mods()
 	return table.concat(out, "\n")
 end
 
+local function get_display_name(i)
+	local np = gNetworkPlayers[i]
+	if not np then
+		return "Unknown"
+	end
+
+	local name = np.name or "Unknown"
+
+	if name == "Player" then
+		name = "Player " .. i
+	end
+
+	return name
+end
+
 local ListAnim = {
 	time = 0,
 	speed = 1,
@@ -248,7 +263,7 @@ function M.render_playerlist()
 			)
 
 			HU.print_colored_text_interpolated(
-				network_get_player_text_color_string(pIndex) .. tostring(np.name or "Unknown"),
+				network_get_player_text_color_string(pIndex) .. get_display_name(pIndex),
 				x + 55,
 				rowYPrev,
 				x + 55,
