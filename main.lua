@@ -50,7 +50,7 @@ LEVEL_KOOPA_KEEP =
 	level_register("level_bowser_castle_entry", COURSE_NONE, "Koopa Keep", "koopakeep", 28000, 0x28, 0x28, 0x28)
 LEVEL_TEST = level_register("level_test_entry", COURSE_NONE, "Test Level", "test", 28000, 0x28, 0x28, 0x28)
 gLevelValues.entryLevel = LEVEL_LOBBY
---warp_to_level(LEVEL_LOBBY, 1, 0)
+warp_to_level(LEVEL_LOBBY, 1, 0)
 
 -- team data (copied from Kart Battles)
 -- in order: light color, dark color, full name (+ color code), short name
@@ -2021,5 +2021,4 @@ hook_chat_command("desync", "- Attempt to fix desync issues", desync_fix_command
 
 require("./m-tags")
 require("./hud/hud-main")
-require("owner_menu")
 require("spawn-objects")
