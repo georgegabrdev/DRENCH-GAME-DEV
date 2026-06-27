@@ -63,7 +63,7 @@ local musicData = {
 	sliderintense = {
 		audio = audio_stream_load("music-slider-madness-3.ogg"),
 		loop = true,
-		musicName = "Slider Madness III (Intense) - Drench Game",
+		musicName = "Slider Madness III - Drench Game",
 	},
 
 	thatguy = {
@@ -104,7 +104,6 @@ local musicData = {
 
 	finalOutro = {
 		audio = audio_stream_load("music-final-outro.ogg"),
-		musicName = "Final Outro - Drench Game",
 	},
 }
 

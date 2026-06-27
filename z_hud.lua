@@ -952,6 +952,13 @@ menu_data = {
 			end,
 			false,
 		},
+		{
+			"CoopDX Menu",
+			function()
+				djui_open_pause_menu()
+			end,
+			false,
+		},
 	},
 	[2] = {
 		{
