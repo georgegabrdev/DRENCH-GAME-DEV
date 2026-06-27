@@ -1,38 +1,111 @@
 -- All Files are .ogg format
 -- Music is compressed to 22050 Hz and Sounds are compressed to 16000
 
+local HU = require("hud-utils")
+
 local musicBitrate = 22050
 local musicData = {
-	lobby = { audio = audio_stream_load("music-lobby.ogg"), loop = true },
-	dire = { audio = audio_stream_load("music-dire.ogg"), loop = true, loopStart = 49.630, loopEnd = 153.967 },
-	scores = { audio = audio_stream_load("music-scores.ogg"), loop = true, loopStart = 20.029, loopEnd = -0.2 },
-	mingle = { audio = audio_stream_load("music-mingle.ogg") },
-	final = { audio = audio_stream_load("music-final.ogg"), loop = true, loopStart = 36.647, loopEnd = 162.315 },
-	slider = { audio = audio_stream_load("music-slider-madness-1.ogg"), loop = true, loopStart = 3.256, loopEnd = -1 },
-	slider2 = { audio = audio_stream_load("music-slider-madness-2.ogg"), loop = true },
-	slider3 = { audio = audio_stream_load("music-slider-madness-3.ogg"), loop = true },
-	sliderintense = { audio = audio_stream_load("music-slider-madness-3.ogg"), loop = true },
-	thatguy = { audio = audio_stream_load("music-thatguy.ogg"), loop = true },
-	dark = { audio = audio_stream_load("music-dark.ogg"), loop = true },
+	lobby = {
+		audio = audio_stream_load("music-lobby.ogg"),
+		loop = true,
+		musicName = "Lobby - Drench Game",
+	},
+
+	dire = {
+		audio = audio_stream_load("music-dire.ogg"),
+		loop = true,
+		loopStart = 49.630,
+		loopEnd = 153.967,
+		musicName = "Dire - Drench Game",
+	},
+
+	scores = {
+		audio = audio_stream_load("music-scores.ogg"),
+		loop = true,
+		loopStart = 20.029,
+		loopEnd = -0.2,
+		musicName = "Scores - Drench Game",
+	},
+
+	mingle = {
+		audio = audio_stream_load("music-mingle.ogg"),
+		musicName = "Mingle - Drench Game",
+	},
+
+	final = {
+		audio = audio_stream_load("music-final.ogg"),
+		loop = true,
+		loopStart = 36.647,
+		loopEnd = 162.315,
+		musicName = "Final - Drench Game",
+	},
+
+	slider = {
+		audio = audio_stream_load("music-slider-madness-1.ogg"),
+		loop = true,
+		loopStart = 3.256,
+		loopEnd = -1,
+		musicName = "Slider Madness I - Drench Game",
+	},
+
+	slider2 = {
+		audio = audio_stream_load("music-slider-madness-2.ogg"),
+		loop = true,
+		musicName = "Slider Madness II - Drench Game",
+	},
+
+	slider3 = {
+		audio = audio_stream_load("music-slider-madness-3.ogg"),
+		loop = true,
+		musicName = "Slider Madness III - Drench Game",
+	},
+
+	sliderintense = {
+		audio = audio_stream_load("music-slider-madness-3.ogg"),
+		loop = true,
+		musicName = "Slider Madness III (Intense) - Drench Game",
+	},
+
+	thatguy = {
+		audio = audio_stream_load("music-thatguy.ogg"),
+		loop = true,
+		musicName = "Hexhammer - Dark Matter",
+	},
+
+	dark = {
+		audio = audio_stream_load("music-dark.ogg"),
+		loop = true,
+		musicName = "Main Theme - The Binding of Isaac",
+	},
+
 	sliderCasino = {
 		audio = audio_stream_load("music-slider-casino-1.ogg"),
 		loop = true,
 		loopStart = 2.433,
 		loopEnd = -1,
+		musicName = "Slider Casino I - Drench Game",
 	},
+
 	sliderCasino2 = {
 		audio = audio_stream_load("music-slider-casino-2.ogg"),
 		loop = true,
 		loopStart = 2.118,
 		loopEnd = -1,
+		musicName = "Slider Casino II - Drench Game",
 	},
+
 	sliderCasino3 = {
 		audio = audio_stream_load("music-slider-casino-3.ogg"),
 		loop = true,
 		loopStart = 1.868,
 		loopEnd = -1,
+		musicName = "Slider Casino III - Drench Game",
 	},
-	finalOutro = { audio = audio_stream_load("music-final-outro.ogg") },
+
+	finalOutro = {
+		audio = audio_stream_load("music-final-outro.ogg"),
+		musicName = "Final Outro - Drench Game",
+	},
 }
 
 local soundData = {
@@ -59,6 +132,20 @@ local targetVolume = 1
 local musicFrequency = 1
 local musicPaused = false
 local pausePoint = 0
+
+local musicPopupTimer = 0
+local musicPopupText = ""
+
+local MusicAnim = {
+	time = 0,
+	prevTime = 0,
+	anim = {
+		timeEnter = 20,
+		timeStay = 120,
+		timeExit = 20,
+	},
+}
+
 function update_music(music)
 	if gServerSettings.headlessServer ~= 0 and network_is_server() then
 		return
@@ -89,6 +176,10 @@ function update_music(music)
 			currentMusic = ""
 			return
 		end
+
+		musicPopupText = thisMusic.musicName or currentMusic
+		MusicAnim.time = 0
+		MusicAnim.prevTime = 0
 
 		audio_stream_set_volume(thisMusic.audio, musicVolume)
 		audio_stream_set_frequency(thisMusic.audio, musicFrequency)
@@ -148,6 +239,9 @@ function update_music(music)
 		audio_stream_play(thisMusic.audio, false, musicVolume)
 		audio_stream_set_position(thisMusic.audio, pausePoint)
 	end
+
+	MusicAnim.prevTime = MusicAnim.time
+	MusicAnim.time = MusicAnim.time + 1
 end
 
 function play_stream_sfx(sound, pos, volume_)
@@ -203,3 +297,80 @@ end
 if DEBUG_MODE then
 	hook_chat_command("looptest", "- Test the loop point for this track", test_loop_point)
 end
+
+function render_music_popup()
+	local total = MusicAnim.anim.timeEnter + MusicAnim.anim.timeStay + MusicAnim.anim.timeExit
+
+	if MusicAnim.time <= 0 or MusicAnim.time > total then
+		return
+	end
+
+	djui_hud_set_resolution(RESOLUTION_DJUI)
+
+	-- Progress (previous/current)
+	local tPrev
+	local tCurr
+
+	if MusicAnim.prevTime <= MusicAnim.anim.timeEnter then
+		tPrev = MusicAnim.prevTime / MusicAnim.anim.timeEnter
+	elseif MusicAnim.prevTime <= MusicAnim.anim.timeEnter + MusicAnim.anim.timeStay then
+		tPrev = 1
+	else
+		local exit = (MusicAnim.prevTime - MusicAnim.anim.timeEnter - MusicAnim.anim.timeStay)
+		tPrev = 1 - math.min(exit / MusicAnim.anim.timeExit, 1)
+	end
+
+	if MusicAnim.time <= MusicAnim.anim.timeEnter then
+		tCurr = MusicAnim.time / MusicAnim.anim.timeEnter
+	elseif MusicAnim.time <= MusicAnim.anim.timeEnter + MusicAnim.anim.timeStay then
+		tCurr = 1
+	else
+		local exit = (MusicAnim.time - MusicAnim.anim.timeEnter - MusicAnim.anim.timeStay)
+		tCurr = 1 - math.min(exit / MusicAnim.anim.timeExit, 1)
+	end
+
+	tPrev = math.max(0, math.min(1, tPrev))
+	tCurr = math.max(0, math.min(1, tCurr))
+
+	-- Smoothstep easing (same as player list)
+	tPrev = tPrev * tPrev * (3 - 2 * tPrev)
+	tCurr = tCurr * tCurr * (3 - 2 * tCurr)
+
+	local alpha = math.floor(255 * tCurr)
+
+	local screenW = djui_hud_get_screen_width()
+	local screenH = djui_hud_get_screen_height()
+
+	local w = 500
+	local h = 72
+
+	local x = (screenW - w) * 0.5
+
+	local hiddenY = screenH + 12
+	local shownY = screenH - h - 24
+
+	local yPrev = hiddenY + (shownY - hiddenY) * tPrev
+	local yCurr = hiddenY + (shownY - hiddenY) * tCurr
+
+	-- Shadow
+	djui_hud_set_color(0, 0, 0, math.floor(90 * tCurr))
+	HU.djui_hud_render_rect_rounded_interpolated(x + 2, yPrev + 2, w, h, x + 2, yCurr + 2, w, h, 18)
+
+	-- Main background
+	djui_hud_set_color(18, 18, 22, math.floor(235 * tCurr))
+	HU.djui_hud_render_rect_rounded_interpolated(x, yPrev, w, h, x, yCurr, w, h, 18)
+
+	-- Accent bar
+	djui_hud_set_color(120, 220, 255, alpha)
+	HU.djui_hud_render_rect_rounded_interpolated(x + 10, yPrev + 10, 6, h - 20, x + 10, yCurr + 10, 6, h - 20, 12)
+
+	-- Header
+	djui_hud_set_color(185, 185, 185, alpha)
+	djui_hud_print_text_interpolated("Now Playing", x + 28, yPrev + 11, 0.6, 0.6, x + 28, yCurr + 11, 0.6, 0.6)
+
+	-- Song title
+	djui_hud_set_color(255, 255, 255, alpha)
+	djui_hud_print_text_interpolated(musicPopupText, x + 28, yPrev + 32, 0.82, 0.82, x + 28, yCurr + 32, 0.82, 0.82)
+end
+
+hook_event(HOOK_ON_HUD_RENDER, render_music_popup)

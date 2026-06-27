@@ -81,8 +81,27 @@ local ListAnim = {
 	},
 }
 
+local pingCache = {}
+local pingTimer = 0
+
 function M.render_playerlist()
 	gServerSettings.enablePlayerList = 0
+
+	pingTimer = pingTimer + 1
+
+	if pingTimer >= 30 then -- update every second
+		pingTimer = 0
+
+		for i = 0, MAX_PLAYERS - 1 do
+			local np = gNetworkPlayers[i]
+			if np and np.connected then
+				pingCache[i] = np.ping or 0
+				if pingTimer == 0 then
+					log_to_console("Ping: " .. np.ping, 1)
+				end
+			end
+		end
+	end
 
 	local prevTime = ListAnim.time
 
@@ -160,6 +179,8 @@ function M.render_playerlist()
 
 	djui_hud_print_text_interpolated("Location", x + width - 420, headerYPrev, 0.7, x + width - 420, headerYCurr, 0.7)
 
+	djui_hud_print_text_interpolated("Ping", x + width - 340, headerYPrev, 0.7, x + width - 340, headerYCurr, 0.7)
+
 	djui_hud_print_text_interpolated(
 		"Game Wins\nMinigame Wins",
 		x + width - 280,
@@ -205,6 +226,12 @@ function M.render_playerlist()
 			local location = get_player_location(pIndex)
 			local sSync = gPlayerSyncTable[pIndex]
 			local wins = sSync.gameWins or 0
+
+			local ping = pingCache[pIndex]
+			if ping == nil then
+				ping = np.ping or 0
+				pingCache[pIndex] = ping
+			end
 
 			local rowYPrev = baseYPrev + ((idx - 1) * rowSpacing)
 			local rowYCurr = baseYCurr + ((idx - 1) * rowSpacing)
@@ -258,6 +285,32 @@ function M.render_playerlist()
 				rowYPrev,
 				0.7,
 				x + width - 420,
+				rowYCurr,
+				0.7
+			)
+
+			local r, g, b
+
+			if ping <= 50 then
+				r, g, b = 0, 255, 0 -- Excellent
+			elseif ping <= 100 then
+				r, g, b = 180, 255, 0 -- Good
+			elseif ping <= 150 then
+				r, g, b = 255, 255, 0 -- Fair
+			elseif ping <= 250 then
+				r, g, b = 255, 140, 0 -- Poor
+			else
+				r, g, b = 255, 0, 0 -- Very bad
+			end
+
+			djui_hud_set_color(r, g, b, opacity)
+
+			djui_hud_print_text_interpolated(
+				ping .. " ms",
+				x + width - 340,
+				rowYPrev,
+				0.7,
+				x + width - 340,
 				rowYCurr,
 				0.7
 			)
