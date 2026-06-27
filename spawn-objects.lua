@@ -30,7 +30,7 @@ local MAX_RECENT = 25
 local spawnMenu = false
 
 local amt = 1
-local MAX_AMOUNT = 50
+local MAX_AMOUNT = 999
 
 -- List of object lists
 local lists = {
@@ -1346,20 +1346,60 @@ local function get_player_data(playerIndex)
 	return playerData[playerIndex]
 end
 
+local holdTimer = 0
+local holdDir = 0
+
 -- Menu navigation
 function move_selection(m)
+	local REPEAT_DELAY = 15 -- 0.5 seconds @ 30 FPS
+	local REPEAT_RATE = 2 -- repeat every 2 frames after delay
+
 	local buttons = m.controller.buttonPressed
+	local held = m.controller.buttonDown
 	local dpadUDFree = gGlobalSyncTable.dpadUDFree
 
 	if inSubmenu then
+		-- Initial press
 		if buttons & U_CBUTTONS ~= 0 then
 			amt = math.min(MAX_AMOUNT, amt + 1)
 			play_sound(SOUND_MENU_CHANGE_SELECT, m.marioObj.header.gfx.cameraToObject)
+			holdDir = 1
+			holdTimer = 0
 			return
 		elseif buttons & D_CBUTTONS ~= 0 then
 			amt = math.max(1, amt - 1)
 			play_sound(SOUND_MENU_CHANGE_SELECT, m.marioObj.header.gfx.cameraToObject)
+			holdDir = -1
+			holdTimer = 0
 			return
+		end
+
+		-- Holding
+		if held & U_CBUTTONS ~= 0 then
+			if holdDir ~= 1 then
+				holdDir = 1
+				holdTimer = 0
+			end
+
+			holdTimer = holdTimer + 1
+			if holdTimer >= REPEAT_DELAY and (holdTimer - REPEAT_DELAY) % REPEAT_RATE == 0 then
+				amt = math.min(MAX_AMOUNT, amt + 1)
+				play_sound(SOUND_MENU_CHANGE_SELECT, m.marioObj.header.gfx.cameraToObject)
+			end
+		elseif held & D_CBUTTONS ~= 0 then
+			if holdDir ~= -1 then
+				holdDir = -1
+				holdTimer = 0
+			end
+
+			holdTimer = holdTimer + 1
+			if holdTimer >= REPEAT_DELAY and (holdTimer - REPEAT_DELAY) % REPEAT_RATE == 0 then
+				amt = math.max(1, amt - 1)
+				play_sound(SOUND_MENU_CHANGE_SELECT, m.marioObj.header.gfx.cameraToObject)
+			end
+		else
+			holdDir = 0
+			holdTimer = 0
 		end
 	end
 
