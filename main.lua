@@ -964,9 +964,14 @@ function update()
 	end
 
 	if gGlobalSyncTable.gameState == GAME_STATE_GAME_END then
-		if gPlayerSyncTable[0].victory and not countedWin then
-			countedWin = true
-			WI.add_win()
+		for i = 0, MAX_PLAYERS - 1 do
+			if gNetworkPlayers[i].connected then
+				if gPlayerSyncTable[i].victory and not countedWin then
+					countedWin = true
+					WI.add_win()
+					break
+				end
+			end
 		end
 	end
 
@@ -1550,7 +1555,7 @@ function on_player_connected(m)
 	local color = network_get_player_text_color_string(m.playerIndex)
 	local name = gNetworkPlayers[m.playerIndex].name
 
-	djui_chat_message_create(color .. name .. " connected.")
+	djui_chat_message_create(color .. name .. " \\#ffffff\\connected.")
 end
 
 hook_event(HOOK_ON_PLAYER_CONNECTED, on_player_connected)
@@ -1580,7 +1585,6 @@ function on_player_disconnected(m)
 	end
 
 	local sMario = gPlayerSyncTable[m.playerIndex]
-	local np = gNetworkPlayers[m.playerIndex]
 	local rejoinID = sMario.rejoinID
 	local roundScore = sMario.roundScore or 0
 	local gameWins = sMario.gameWins or 0

@@ -382,6 +382,21 @@ function on_hud_render()
 			HU.djui_hud_render_rect_rounded(x - 10 * scale, y - 10 * scale, width + 20 * scale, 52 * scale, 10 * scale)
 			djui_hud_set_color(255, 255, 255, 255)
 			djui_hud_print_text_with_color_and_outline(text, x, y, scale, 255, 2)
+			local padding = 10
+
+			local screen_w = djui_hud_get_screen_width()
+			local screen_h = djui_hud_get_screen_height()
+
+			local text_w = djui_hud_measure_text(text) * scale
+
+			djui_hud_print_text_with_color_and_outline(
+				"Press DPAD Down to enter Ghost Mode",
+				screen_w - text_w - padding,
+				screen_h - 20,
+				scale,
+				255,
+				2
+			)
 		end
 	elseif gGlobalSyncTable.gameState == GAME_STATE_MINI_END then
 		if is_final_duel() then

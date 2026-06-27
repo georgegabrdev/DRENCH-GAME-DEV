@@ -191,7 +191,7 @@ function M.render_playerlist()
 
 	djui_hud_print_text_interpolated("Location", x + width - 420, headerYPrev, 0.7, x + width - 420, headerYCurr, 0.7)
 
-	djui_hud_print_text_interpolated("Ping", x + width - 340, headerYPrev, 0.7, x + width - 340, headerYCurr, 0.7)
+	djui_hud_print_text_interpolated("Ping", x + 350, headerYPrev, 0.7, x + 350, headerYCurr, 0.7)
 
 	djui_hud_print_text_interpolated(
 		"Game Wins\nMinigame Wins",
@@ -317,15 +317,7 @@ function M.render_playerlist()
 
 			djui_hud_set_color(r, g, b, opacity)
 
-			djui_hud_print_text_interpolated(
-				ping .. " ms",
-				x + width - 340,
-				rowYPrev,
-				0.7,
-				x + width - 340,
-				rowYCurr,
-				0.7
-			)
+			djui_hud_print_text_interpolated(ping .. " ms", x + 350, rowYPrev, 0.7, x + 350, rowYCurr, 0.7)
 
 			djui_hud_set_color(255, 255, 100, opacity)
 

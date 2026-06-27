@@ -8,6 +8,7 @@ end
 
 local TAG_DATA = {
 	{ key = "CREATOR", name = "[CREATOR]", color = "\\#27F568\\" },
+	{ key = "HOST", name = "[HOST]", color = "\\#FF8000\\" },
 	{ key = "COOL_GUY", name = "\\#ab00ff\\[Cool \\#00ff85\\guy]", color = "" },
 	--2808064910043531445
 }
@@ -145,6 +146,8 @@ end
 
 local function main_update()
 	resolve_my_tag()
+
+	gPlayerSyncTable[0].tagId = TAG_TYPE.HOST
 end
 
 local function on_chat_message(m, msg)

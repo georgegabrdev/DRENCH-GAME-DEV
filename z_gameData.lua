@@ -396,7 +396,7 @@ GAME_MODE_DATA = {
 	[GAME_MODE_BOMB_TAG] = {
 		name = "Bomb Tag",
 		desc = "Don't hold a Bob-Omb! Tag another player to pass your Bob-Omb to them. If you're holding a Bob-Omb when time runs out... you can probably guess what happens.",
-		level = { LEVEL_TOAD_TOWN, LEVEL_KOOPA_KEEP, LEVEL_DUEL, LEVEL_LIGHTS_OUT }, -- selects toad town or koopa keep
+		level = { LEVEL_TOAD_TOWN, LEVEL_KOOPA_KEEP, LEVEL_LIGHTS_OUT }, -- selects toad town or koopa keep
 		interact = PLAYER_INTERACTIONS_PVP, -- so invulnerability frames exist
 		kbStrength = 10,
 		roundTime = 30 * 30, -- 30 seconds
@@ -999,7 +999,7 @@ GAME_MODE_DATA = {
 	[GAME_MODE_DEATH_HIT] = {
 		name = "Death Hit",
 		desc = "Last player standing wins! It's self explanatory. If you get hit, you are ABSOLUTELY cooked. So don't get hit.",
-		level = { LEVEL_TOAD_TOWN, LEVEL_KOOPA_KEEP, LEVEL_DUEL, LEVEL_LIGHTS_OUT },
+		level = { LEVEL_TOAD_TOWN, LEVEL_KOOPA_KEEP, LEVEL_LIGHTS_OUT },
 		interact = PLAYER_INTERACTIONS_PVP,
 		kbStrength = 999,
 		music = "sliderintense",
@@ -1119,7 +1119,7 @@ GAME_MODE_DATA = {
 			local isLampOwner = (gIndex == gGlobalSyncTable.lampOwner)
 
 			if not isLampOwner then
-				djui_hud_set_color(0, 0, 0, 150)
+				djui_hud_set_color(0, 0, 0, 100)
 				djui_hud_render_rect(0, 0, screenWidth, screenHeight)
 			end
 
