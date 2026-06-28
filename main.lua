@@ -1,4 +1,4 @@
--- name: \\#00ffd5\\Drench Game Deluxe v1.2.4 [WIP]
+-- name: \\#00ffd5\\Drench Game Deluxe v1.2.4.1 [WIP]
 -- description: Squid Game in Mario 64!\n\nCommissioned by Drenchy\nInspired by Dani's \"Crab Game\"\n\nProgramming: EmilyEmmi\n\nMaps: biobak, EmilyEmmi, Woissil\n\nSoundtrack: murioz, Awesome Seal Guy (YT)\n\nVoice Acting:\nEspi as Toad\nSqueex as Mingle Callout\nTrashcam as Waluigi\n\nAds: Squeex's Community\n\nSpecial Thanks: Squishy
 -- category: gamemode
 -- incompatible: gamemode
@@ -142,6 +142,7 @@ for i = 0, MAX_PLAYERS - 1 do
 	sMario.validForDuel = false
 	sMario.fov = 70
 	sMario.rejoinID = "-1"
+	sMario.canBeGrabbed = true
 end
 
 local firstLoaded = false
@@ -171,6 +172,7 @@ function load_on_sync()
 	sMario.validForDuel = gGlobalSyncTable.allDuel
 	sMario.fov = 70
 	sMario.rejoinID = get_coopnet_id(0)
+	sMario.canBeGrabbed = true
 	sMario.team = calculate_lowest_member_team()
 	if sMario.rejoinID == "-1" then
 		sMario.rejoinID = gNetworkPlayers[0].name

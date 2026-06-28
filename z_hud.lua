@@ -368,28 +368,43 @@ function on_hud_render()
 		end
 
 		if gMarioStates[0].action == ACT_SPECTATE then
-			local scale = 0.2
-			local text = "???"
+			local nameScale = 0.25
+			local hintScale = 0.16
+
+			local playerText = "???"
 			if spectatedPlayer > 0 and spectatedPlayer < MAX_PLAYERS then
 				local np = gNetworkPlayers[spectatedPlayer]
-				text = network_get_player_text_color_string(np.localIndex) .. np.name
+				playerText = network_get_player_text_color_string(np.localIndex) .. np.name
 			end
-			text = "< " .. text .. "\\#ffffff\\ >"
-			local width = djui_hud_measure_text(remove_color(text)) * scale
-			local x = (screenWidth - width) / 2
-			local y = screenHeight - 40 * scale
-			djui_hud_set_color(0, 0, 0, 100)
-			HU.djui_hud_render_rect_rounded(x - 10 * scale, y - 10 * scale, width + 20 * scale, 52 * scale, 10 * scale)
-			djui_hud_set_color(255, 255, 255, 255)
-			djui_hud_print_text_with_color_and_outline(text, x, y, scale, 255, 2)
 
+			playerText = "< " .. playerText .. "\\#ffffff\\ >"
+			local hintText = "\\#bfbfbf\\DPAD Down: Toggle Ghost Mode"
+
+			local playerWidth = djui_hud_measure_text(remove_color(playerText)) * nameScale
+			local hintWidth = djui_hud_measure_text(remove_color("DPAD Down: Toggle Ghost Mode")) * hintScale
+
+			local width = math.max(playerWidth, hintWidth)
+			local height = 42
+
+			local x = (screenWidth - width) * 0.5
+			local y = screenHeight - 55
+
+			-- Background
+			djui_hud_set_color(0, 0, 0, 150)
+			HU.djui_hud_render_rect_rounded(x - 8, y - 8, width + 16, height, 8)
+
+			-- Player name
+			djui_hud_set_color(255, 255, 255, 255)
+			djui_hud_print_text_with_color_and_outline(playerText, x, y, nameScale, 255, 2)
+
+			-- Hint
 			djui_hud_print_text_with_color_and_outline(
-				"Press DPAD Down to enter Ghost Mode",
-				(screenWidth - width),
-				screenHeight - 40 * scale,
-				scale,
-				255,
-				2
+				hintText,
+				(screenWidth - hintWidth) * 0.5,
+				y + 18,
+				hintScale,
+				220,
+				1
 			)
 		end
 	elseif gGlobalSyncTable.gameState == GAME_STATE_MINI_END then

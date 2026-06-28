@@ -10,7 +10,7 @@ GAME_MODE_DATA = {
 		desc = "Get across the bridge without falling! Only one glass pane is safe in each row. Will you push your luck, or let someone else take the fall?",
 		level = LEVEL_GLASS,
 		interact = PLAYER_INTERACTIONS_SOLID,
-		kbStrength = 5,
+		kbStrength = 0,
 		music = "dire",
 		marioUpdateFunc = function(m) -- switch to custom falling action
 			if
@@ -41,9 +41,11 @@ GAME_MODE_DATA = {
 			-- spawn thwomps for all players
 			for i = 0, MAX_PLAYERS - 1 do
 				local m = gMarioStates[i]
+				local sMario = gPlayerSyncTable[i]
 				spawn_object_no_rotate(id_bhvGBThwomp, E_MODEL_THWOMP, m.pos.x, m.pos.y + 1000, m.pos.z, function(o)
 					o.oBehParams = i
 				end, false)
+				sMario.canBeGrabbed = false
 			end
 		end,
 		allowPvpFunc = function(attacker, victim, interaction)
@@ -1040,6 +1042,7 @@ GAME_MODE_DATA = {
 		kbStrength = 25,
 		music = "dark",
 		maxTime = 2 * 60 * 30,
+		showHealth = true,
 
 		hostUpdateFunc = function()
 			if gGlobalSyncTable.gameTimer == 1 then

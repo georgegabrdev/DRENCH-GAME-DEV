@@ -4,7 +4,7 @@ if unsupported then
 end
 
 local Mod = {}
-local HU = require("n-hud-utils")
+local HU = require("../hud-utils")
 
 local basePad = 10
 local warningPopups = {}
