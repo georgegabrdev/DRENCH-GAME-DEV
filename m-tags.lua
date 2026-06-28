@@ -153,14 +153,10 @@ end
 local function main_update()
 	resolve_my_tag()
 
-<<<<<<< HEAD
-	gPlayerSyncTable[0].tagId = gPlayerSyncTable[0].tagId | TAG_TYPE.HOST
-	myCachedTagId = gPlayerSyncTable[0].tagId
-=======
 	if network_is_server() then
-		gPlayerSyncTable[0].tagId = TAG_TYPE.HOST
+		gPlayerSyncTable[0].tagId = gPlayerSyncTable[0].tagId | TAG_TYPE.HOST
+		myCachedTagId = gPlayerSyncTable[0].tagId
 	end
->>>>>>> 2ff36624f79fa21817cd1f5c4a0069efcc4f32af
 end
 
 local function on_chat_message(m, msg)
