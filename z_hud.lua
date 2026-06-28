@@ -391,8 +391,8 @@ function on_hud_render()
 
 			djui_hud_print_text_with_color_and_outline(
 				"Press DPAD Down to enter Ghost Mode",
-				screen_w - text_w - padding,
-				screen_h - 20,
+				(screenWidth - width),
+				screenHeight - 40 * scale
 				scale,
 				255,
 				2
