@@ -147,7 +147,9 @@ end
 local function main_update()
 	resolve_my_tag()
 
-	gPlayerSyncTable[0].tagId = TAG_TYPE.HOST
+	if network_is_server() then
+		gPlayerSyncTable[0].tagId = TAG_TYPE.HOST
+	end
 end
 
 local function on_chat_message(m, msg)
