@@ -1,0 +1,193 @@
+-- hud-popups.lua
+if unsupported then
+	return
+end
+
+local Mod = {}
+local HU = require("n-hud-utils")
+
+local basePad = 10
+local warningPopups = {}
+local maxWarningPopups = 5
+
+local function strip_colors(s)
+	if not s then
+		return ""
+	end
+	return tostring(s):gsub("\\#%x%x%x%x%x%x\\", "")
+end
+
+local function safe_measure(s)
+	local clean = strip_colors(s)
+	djui_hud_set_font(FONT_NORMAL)
+	return djui_hud_measure_text(clean) or 0
+end
+
+local function update_popup_anim(anim, isVisible)
+	if isVisible then
+		if anim.timer < anim.timeEnter then
+			anim.timer = anim.timer + 1
+		end
+	else
+		if anim.timer > 0 then
+			anim.timer = anim.timer - 1
+		end
+	end
+end
+
+function create_warning_local(text)
+	text = unpack_popup_trans(text or "")
+	text = HU.normalize_text(text or "")
+
+	local lines = {}
+	local currentColor = ""
+	local maxTextWidth = 540
+
+	for seg in text:gmatch("([^\n]*)\n?") do
+		local words = {}
+		for w in seg:gmatch("%S+") do
+			table.insert(words, w)
+		end
+
+		local curLine = ""
+		for _, w in ipairs(words) do
+			local hexMatch = w:match("\\#%x%x%x%x%x%x\\")
+			local testLine = (curLine == "") and w or (curLine .. " " .. w)
+
+			if safe_measure(currentColor .. testLine) > maxTextWidth then
+				table.insert(lines, currentColor .. curLine)
+				curLine = w
+			else
+				curLine = testLine
+			end
+			if hexMatch then
+				currentColor = hexMatch
+			end
+		end
+		if curLine ~= "" then
+			table.insert(lines, currentColor .. curLine)
+		end
+	end
+
+	local customRowHeight = 38
+	local baseH = (basePad * 4) + (#lines * customRowHeight)
+
+	if #warningPopups >= maxWarningPopups then
+		table.remove(warningPopups)
+	end
+
+	table.insert(warningPopups, {
+		timer = 0,
+		timeEnter = 15,
+		timeExit = 15,
+		lines = lines,
+		baseH = baseH,
+		rowH = customRowHeight,
+		stayTimer = 120,
+		isExiting = false,
+	})
+	play_sound(SOUND_MENU_PINCH_MARIO_FACE, gGlobalSoundSource)
+end
+
+function create_warning_popup(text)
+	local p = create_packet(PACKET_TYPE_WARNING_MESSAGE, text)
+
+	if network_is_server() then
+		create_warning_local(text)
+		network_send(true, p)
+	else
+		send_packet_to_server(p)
+	end
+end
+
+function Mod.render_warning_popups()
+	djui_hud_set_resolution(RESOLUTION_DJUI)
+	djui_hud_set_font(FONT_NORMAL)
+
+	local sw = djui_hud_get_screen_width()
+	local sh = djui_hud_get_screen_height()
+
+	local s = sh / 1080
+
+	for i = #warningPopups, 1, -1 do
+		local p = warningPopups[i]
+
+		if p.timer >= p.timeEnter then
+			if p.stayTimer > 0 then
+				p.stayTimer = p.stayTimer - 1
+			else
+				p.isExiting = true
+			end
+		end
+
+		local currentBoxWidth = 600 * s
+		local currentBoxHeight = p.baseH * s
+
+		update_popup_anim(p, not p.isExiting)
+
+		if p.isExiting and p.timer <= 0 then
+			table.remove(warningPopups, i)
+		else
+			local progress = p.timer / p.timeEnter
+
+			local x = (sw - currentBoxWidth) / 2
+
+			local targetY = (sh / 1.25) - (currentBoxHeight / 2)
+			local startY = sh + 10
+
+			local y = startY + (targetY - startY) * progress
+
+			local prevTimer = p.timer
+			if p.isExiting then
+				prevTimer = p.timer + 1
+			elseif p.timer >= p.timeEnter then
+				prevTimer = p.timer
+			else
+				prevTimer = p.timer - 1
+			end
+			if prevTimer < 0 then
+				prevTimer = 0
+			end
+
+			local prevProgress = prevTimer / p.timeEnter
+			local yPrev = startY + (targetY - startY) * prevProgress
+
+			local r, g, b = 0, 255, 255 -- cyan
+			local baseRectAlpha = 180
+			local baseTextAlpha = 255
+
+			djui_hud_set_color(r, g, b, progress * baseRectAlpha)
+
+			local thickness = 2.0 * s
+			HU.djui_hud_render_rect_rounded_outlined_interpolated(
+				x,
+				yPrev,
+				currentBoxWidth,
+				currentBoxHeight,
+				x,
+				y,
+				currentBoxWidth,
+				currentBoxHeight,
+				0,
+				255,
+				255,
+				thickness,
+				progress * 255
+			)
+
+			local currYPrev = yPrev + (basePad * 2 * s)
+			local currY = y + (basePad * 2 * s)
+			for _, line in ipairs(p.lines) do
+				local clean = strip_colors(line)
+				local tw = djui_hud_measure_text(clean) * s
+				local tx = x + (currentBoxWidth - tw) / 2
+
+				HU.print_colored_text_interpolated(line, tx, currYPrev, tx, currY, s, progress * baseTextAlpha)
+				currYPrev = currYPrev + (p.rowH * s)
+				currY = currY + (p.rowH * s)
+			end
+		end
+	end
+end
+
+return Mod

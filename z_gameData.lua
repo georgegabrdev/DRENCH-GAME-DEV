@@ -565,6 +565,7 @@ GAME_MODE_DATA = {
 						if duelTimeUntilBomb > 5 then
 							duelTimeUntilBomb = duelTimeUntilBomb - 1
 						end
+						create_warning_popup("Bombs are falling in the sky!")
 					end
 				else
 					duelBombSpawnTimer = 0
