@@ -18,10 +18,26 @@ function act_spectate(m)
 	end
 	lastGhostToggle = lastGhostToggle - 1
 	if ghostMode then
-		m.marioObj.header.gfx.node.flags = m.marioObj.header.gfx.node.flags | GRAPH_RENDER_INVISIBLE
-		m.collidedObjInteractTypes = 0
+		m.flags = m.flags | MARIO_VANISH_CAP
+
+		-- Make Mario intangible
+		m.marioObj.oIntangibleTimer = -1
+		m.marioObj.oInteractType = 0
+		m.invincTimer = 99999999
+
+		-- Keep health full
 		m.health = 0x880
 		sonic_set_full_rings(m.playerIndex)
+
+		-- Hide Mario
+		m.marioObj.header.gfx.node.flags = m.marioObj.header.gfx.node.flags | GRAPH_RENDER_INVISIBLE
+	else
+		-- Restore interaction
+		m.marioObj.oIntangibleTimer = 0
+		m.marioObj.oInteractType = INTERACT_PLAYER
+
+		-- Show Mario
+		m.marioObj.header.gfx.node.flags = m.marioObj.header.gfx.node.flags & ~GRAPH_RENDER_INVISIBLE
 	end
 
 	if m.actionTimer < 15 then
