@@ -965,14 +965,12 @@ function update()
 		duelLastState = 0
 	end
 
-	if gGlobalSyncTable.gameState == GAME_STATE_GAME_END then
-		for i = 0, MAX_PLAYERS - 1 do
-			if gNetworkPlayers[i].connected then
-				if gPlayerSyncTable[i].victory and not countedWin then
-					countedWin = true
-					WI.add_win()
-					break
-				end
+	if gGlobalSyncTable.gameState == GAME_STATE_GAME_END and not countedWin then
+		for _, index in ipairs(get_winners_table()) do
+			if index == 0 then
+				countedWin = true
+				WI.add_win()
+				break
 			end
 		end
 	end

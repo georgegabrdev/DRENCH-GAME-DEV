@@ -10,6 +10,9 @@ local basePad = 10
 local warningPopups = {}
 local maxWarningPopups = 5
 
+local POPUP_TRANS = "@@popup_trans@@"
+local POPUP_SEP = "\31"
+
 local function strip_colors(s)
 	if not s then
 		return ""
@@ -33,6 +36,30 @@ local function update_popup_anim(anim, isVisible)
 			anim.timer = anim.timer - 1
 		end
 	end
+end
+
+local function unpack_popup_trans(text)
+	if type(text) ~= "string" then
+		return text
+	end
+
+	local prefix = POPUP_TRANS .. POPUP_SEP
+	if text:sub(1, #prefix) ~= prefix then
+		return text
+	end
+
+	local data = {}
+	local last_end = 1
+	local s, e = text:find(POPUP_SEP, 1, true)
+	while s do
+		table.insert(data, text:sub(last_end, s - 1))
+		last_end = e + 1
+		s, e = text:find(POPUP_SEP, last_end, true)
+	end
+	table.insert(data, text:sub(last_end))
+
+	-- Return the translation key directly instead of looking it up in LANG.
+	return data[2] or text
 end
 
 function create_warning_local(text)

@@ -9,7 +9,7 @@ GAME_MODE_DATA = {
 		name = "Glass Bridge",
 		desc = "Get across the bridge without falling! Only one glass pane is safe in each row. Will you push your luck, or let someone else take the fall?",
 		level = LEVEL_GLASS,
-		interact = PLAYER_INTERACTIONS_SOLID,
+		interact = PLAYER_INTERACTIONS_NONE,
 		kbStrength = 0,
 		music = "dire",
 		marioUpdateFunc = function(m) -- switch to custom falling action
@@ -45,7 +45,6 @@ GAME_MODE_DATA = {
 				spawn_object_no_rotate(id_bhvGBThwomp, E_MODEL_THWOMP, m.pos.x, m.pos.y + 1000, m.pos.z, function(o)
 					o.oBehParams = i
 				end, false)
-				sMario.canBeGrabbed = false
 			end
 		end,
 		allowPvpFunc = function(attacker, victim, interaction)
