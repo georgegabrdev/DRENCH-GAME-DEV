@@ -61,6 +61,8 @@ local function get_display_name(i)
 	return name
 end
 
+spectateAnim = spectateAnim or { time = 0 }
+
 function on_hud_render()
 	djui_hud_set_resolution(RESOLUTION_N64)
 	djui_hud_set_font(FONT_SPECIAL)
@@ -367,44 +369,133 @@ function on_hud_render()
 			end
 		end
 
+		spectateAnim = spectateAnim or { time = 0, prevTime = 0 }
+
+		local anim = {
+			timeEnter = 20,
+			timeStay = 999999,
+			timeExit = 10,
+		}
+
+		if gMarioStates[0].action == ACT_SPECTATE then
+			spectateAnim.prevTime = spectateAnim.time
+			spectateAnim.time = spectateAnim.time + 1
+		else
+			spectateAnim.prevTime = spectateAnim.time
+			spectateAnim.time = 0
+		end
+
 		if gMarioStates[0].action == ACT_SPECTATE then
 			local nameScale = 0.25
-			local hintScale = 0.16
+			local paddingX = 14
+			local paddingY = 10
 
-			local playerText = "???"
+			local leftArrow = "<"
+			local rightArrow = ">"
+
+			-- player name
+			local playerName = "???"
 			if spectatedPlayer > 0 and spectatedPlayer < MAX_PLAYERS then
 				local np = gNetworkPlayers[spectatedPlayer]
-				playerText = network_get_player_text_color_string(np.localIndex) .. np.name
+				playerName = network_get_player_text_color_string(np.localIndex) .. np.name
 			end
 
-			playerText = "< " .. playerText .. "\\#ffffff\\ >"
-			local hintText = "\\#bfbfbf\\DPAD Down: Toggle Ghost Mode"
+			playerName = "\\#ffffff\\" .. playerName
+			local cleanName = remove_color(playerName)
 
-			local playerWidth = djui_hud_measure_text(remove_color(playerText)) * nameScale
-			local hintWidth = djui_hud_measure_text(remove_color("DPAD Down: Toggle Ghost Mode")) * hintScale
+			-- measure
+			local textWidth = djui_hud_measure_text(cleanName) * nameScale
+			local textHeight = 16 * nameScale
 
-			local width = math.max(playerWidth, hintWidth)
-			local height = 42
+			local width = textWidth + paddingX * 2
+			local height = textHeight + paddingY * 2
 
-			local x = (screenWidth - width) * 0.5
-			local y = screenHeight - 55
+			-- progress (same style as your music popup)
+			local function calcTime(t)
+				local total = anim.timeEnter + anim.timeStay + anim.timeExit
 
-			-- Background
-			djui_hud_set_color(0, 0, 0, 150)
-			HU.djui_hud_render_rect_rounded(x - 8, y - 8, width + 16, height, 8)
+				local v
+				if t <= anim.timeEnter then
+					v = t / anim.timeEnter
+				elseif t <= anim.timeEnter + anim.timeStay then
+					v = 1
+				else
+					local exit = (t - anim.timeEnter - anim.timeStay)
+					v = 1 - math.min(exit / anim.timeExit, 1)
+				end
 
-			-- Player name
-			djui_hud_set_color(255, 255, 255, 255)
-			djui_hud_print_text_with_color_and_outline(playerText, x, y, nameScale, 255, 2)
+				v = math.max(0, math.min(1, v))
+				v = v * v * (3 - 2 * v) -- smoothstep
+				return v
+			end
 
-			-- Hint
+			local tPrev = calcTime(spectateAnim.prevTime)
+			local tCurr = calcTime(spectateAnim.time)
+
+			local alpha = math.floor(180 * tCurr)
+
+			-- positions
+			local screenW = screenWidth
+			local screenH = screenHeight
+
+			local x = (screenW - width) * 0.5
+
+			local hiddenY = screenH + 20
+			local shownY = screenH - 55
+
+			local yPrev = hiddenY + (shownY - hiddenY) * tPrev
+			local yCurr = hiddenY + (shownY - hiddenY) * tCurr
+
+			-- animated arrows
+			local arrowAnim = math.sin(spectateAnim.time * 0.15)
+			local arrowOffsetY = arrowAnim * 2
+			local arrowAlpha = 160 + arrowAnim * 60
+
+			local centerX = x + width * 0.5
+			local textY = yCurr + paddingY
+
+			-- background shadow
+			djui_hud_set_color(0, 0, 0, math.floor(100 * tCurr))
+			HU.djui_hud_render_rect_rounded(x + 2, yPrev + 2, width, height, 10)
+
+			-- main box
+			djui_hud_set_color(18, 18, 22, alpha)
+			HU.djui_hud_render_rect_rounded(x, yCurr, width, height, 8)
+
+			-- text positions
+			local arrowXOffset = textWidth * 0.5 + 12
+
+			-- LEFT ARROW
+			djui_hud_set_color(255, 255, 255, arrowAlpha)
 			djui_hud_print_text_with_color_and_outline(
-				hintText,
-				(screenWidth - hintWidth) * 0.5,
-				y + 18,
-				hintScale,
-				220,
-				1
+				leftArrow,
+				centerX - arrowXOffset,
+				textY + arrowOffsetY,
+				nameScale,
+				255,
+				2
+			)
+
+			-- NAME
+			djui_hud_set_color(255, 255, 255, 255)
+			djui_hud_print_text_with_color_and_outline(
+				playerName,
+				centerX - (textWidth * 0.5),
+				textY,
+				nameScale,
+				255,
+				2
+			)
+
+			-- RIGHT ARROW
+			djui_hud_set_color(255, 255, 255, arrowAlpha)
+			djui_hud_print_text_with_color_and_outline(
+				rightArrow,
+				centerX + arrowXOffset,
+				textY - arrowOffsetY,
+				nameScale,
+				255,
+				2
 			)
 		end
 	elseif gGlobalSyncTable.gameState == GAME_STATE_MINI_END then

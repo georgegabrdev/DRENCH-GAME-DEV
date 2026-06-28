@@ -122,6 +122,7 @@ local soundData = {
 	two = audio_sample_load("sound-two.ogg"),
 	one = audio_sample_load("sound-one.ogg"),
 	go = audio_sample_load("sound-go.ogg"),
+	select_menu = audio_sample_load("sound-select_menu.ogg"),
 }
 
 -- set current streamed music and update volume
