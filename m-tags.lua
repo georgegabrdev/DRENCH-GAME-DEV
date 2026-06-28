@@ -17,14 +17,14 @@ TAG_TYPE = {}
 DEF_TAGS = {}
 
 for i, data in ipairs(TAG_DATA) do
-	local id = i
+	local id = 1 << (i - 1) -- 1, 2, 4, 8, 16...
+
 	TAG_TYPE[data.key] = id
 	DEF_TAGS[id] = {
 		name = data.name,
 		color = data.color,
 	}
 end
-
 -----------------
 --- DC TO TAG ---
 -----------------
@@ -35,7 +35,7 @@ end
 
 -- add your coopNet id here
 local coopnetToTag = {
-	["12766692904149469634"] = TAG_TYPE.CREATOR, -- Georgegabr1
+	["1045699806986420677"] = TAG_TYPE.CREATOR, -- Georgegabr1
 	["2808064910043531445"] = TAG_TYPE.COOL_GUY,
 }
 
@@ -90,12 +90,14 @@ local function resolve_my_tag()
 	local coopnetId = get_my_coopnet_id()
 
 	if (discordId ~= "0" and discordId ~= "") or (coopnetId ~= "0" and coopnetId ~= "") then
+		gPlayerSyncTable[0].tagId = 0
+
 		if discordToTag[discordId] then
-			gPlayerSyncTable[0].tagId = discordToTag[discordId]
-		elseif coopnetToTag[coopnetId] then
-			gPlayerSyncTable[0].tagId = coopnetToTag[coopnetId]
-		else
-			gPlayerSyncTable[0].tagId = 0
+			gPlayerSyncTable[0].tagId = gPlayerSyncTable[0].tagId | discordToTag[discordId]
+		end
+
+		if coopnetToTag[coopnetId] then
+			gPlayerSyncTable[0].tagId = gPlayerSyncTable[0].tagId | coopnetToTag[coopnetId]
 		end
 
 		myCachedTagId = gPlayerSyncTable[0].tagId
@@ -119,12 +121,16 @@ local function on_sync_valid()
 end
 
 local function get_formatted_tag(playerIndex)
-	local tagId = gPlayerSyncTable[playerIndex].tagId
-	if tagId and tagId > 0 and DEF_TAGS[tagId] then
-		local def = DEF_TAGS[tagId]
-		return def.color .. def.name .. " "
+	local tagId = gPlayerSyncTable[playerIndex].tagId or 0
+	local str = ""
+
+	for id, def in pairs(DEF_TAGS) do
+		if (tagId & id) ~= 0 then
+			str = str .. def.color .. def.name .. " "
+		end
 	end
-	return ""
+
+	return str
 end
 
 local function get_player_display_name(playerIndex)
@@ -147,13 +153,14 @@ end
 local function main_update()
 	resolve_my_tag()
 
-	gPlayerSyncTable[0].tagId = TAG_TYPE.HOST
+	gPlayerSyncTable[0].tagId = gPlayerSyncTable[0].tagId | TAG_TYPE.HOST
+	myCachedTagId = gPlayerSyncTable[0].tagId
 end
 
 local function on_chat_message(m, msg)
 	local s = gPlayerSyncTable[m.playerIndex]
 
-	if s and s.tagId and s.tagId > 0 and DEF_TAGS[s.tagId] then
+	if s and s.tagId and s.tagId > 0 then
 		local displayName = get_player_display_name(m.playerIndex)
 		local formattedMsg = string.format("%s\\#dcdcdc\\: %s", displayName, msg)
 
