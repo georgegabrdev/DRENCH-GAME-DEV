@@ -19,7 +19,6 @@ function act_spectate(m)
 	lastGhostToggle = lastGhostToggle - 1
 	if ghostMode then
 		m.marioObj.header.gfx.node.flags = m.marioObj.header.gfx.node.flags | GRAPH_RENDER_INVISIBLE
-		m.intangibleTimer = 2
 		m.collidedObjInteractTypes = 0
 		m.health = 0x880
 		sonic_set_full_rings(m.playerIndex)
