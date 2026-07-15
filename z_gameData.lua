@@ -1137,6 +1137,77 @@ GAME_MODE_DATA = {
 			return "Dark", false
 		end,
 	},
+	[GAME_MODE_MEMORY_BRIDGE] = {
+		name = "Memory Bridge",
+		desc = "Remember the order of the glass panes! You can only see the correct answers a bit ahead. Do you trust your memory, or will you let someone else take the fall? (Note: Points are halved)",
+		level = LEVEL_GLASS_ALT,
+		interact = PLAYER_INTERACTIONS_NONE,
+		kbStrength = 5,
+		music = "stealth", -- Defined above in on_mods_loaded
+		marioUpdateFunc = function(m) -- switch to custom falling action
+			if
+				m.action & ACT_GROUP_MASK ~= ACT_GROUP_CUTSCENE
+				and m.action ~= ACT_GB_FALL
+				and m.action ~= ACT_SPECTATE
+				and m.floor
+				and m.floor.type == SURFACE_DEATH_PLANE
+				and m.vel.y <= -75
+				and m.pos.y - m.floorHeight <= 8000
+			then
+				set_mario_action(m, ACT_GB_FALL, 0)
+			end
+
+			-- Extra function to show the correct panes
+			if m.playerIndex == 0 and m.action ~= ACT_SPECTATE then
+				local score = gPlayerSyncTable[0].roundScore or 0
+				local o = obj_get_first_with_behavior_id(id_bhvGlass)
+				while o do
+					if
+						o.oBobombFuseTimer == 1
+						and (o.oBehParams2ndByte < 4 or o.oBehParams2ndByte < score or o.oBehParams2ndByte - score == 3)
+					then
+						generate_yellow_sparkles(o.oPosX, o.oPosY, o.oPosZ, 150)
+					end
+					o = obj_get_next_with_same_behavior_id(o)
+				end
+			end
+		end,
+		victoryFunc = function(m)
+			if m.action & ACT_FLAG_AIR == 0 and m.floor and m.floor.type == SURFACE_TIMER_END then
+				if gPlayerSyncTable[m.playerIndex].roundScore >= 10 then
+					return true
+				elseif m.playerIndex == 0 then
+					play_sound(SOUND_MENU_CAMERA_BUZZ, gGlobalSoundSource)
+					djui_chat_message_create("\\#ff5050\\You aren't allowed to skip any glass panes!")
+					set_to_spawn_pos(m, true)
+				end
+			end
+			return false
+		end,
+		startingSetup = function()
+			-- spawn thwomps for all players
+			for i = 0, MAX_PLAYERS - 1 do
+				local m = gMarioStates[i]
+				spawn_object_no_rotate(id_bhvGBThwomp, E_MODEL_THWOMP, m.pos.x, m.pos.y + 1000, m.pos.z, function(o)
+					o.oBehParams = i
+				end, false)
+			end
+		end,
+		allowPvpFunc = function(attacker, victim, interaction)
+			local sAttacker = gPlayerSyncTable[attacker.playerIndex]
+			local sVictim = gPlayerSyncTable[victim.playerIndex]
+
+			if sAttacker.roundScore == 0 or sVictim.roundScore == 0 then
+				return false
+			end
+		end,
+		pointCalcFunc = function(index) -- half points to make things fair
+			return gPlayerSyncTable[index].earnedPoints // 2
+		end,
+		losePointCalcFunc = function(index) -- half points to make things fair
+			return gPlayerSyncTable[index].earnedPoints // 2
+		end,
+	},
 }
 
 LEVEL_SPAWN_DATA = {
@@ -1176,6 +1247,10 @@ LEVEL_SPAWN_DATA = {
 	},
 	[LEVEL_KOOPA_KEEP] = {
 		spawnPos = { x = 1210, y = -737, z = -2088 },
+		spawnDist = 400,
+	},
+	[LEVEL_GLASS_ALT] = {
+		spawnPos = { x = 0, y = 1000, z = -8000 },
 		spawnDist = 400,
 	},
 	[LEVEL_TEST] = {

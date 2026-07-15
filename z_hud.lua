@@ -414,6 +414,10 @@ function on_hud_render()
 			local function calcTime(t)
 				local total = anim.timeEnter + anim.timeStay + anim.timeExit
 
+				if spectateAnim.time <= 0 or spectateAnim.time > total then
+					return
+				end
+
 				local v
 				if t <= anim.timeEnter then
 					v = t / anim.timeEnter
@@ -448,54 +452,53 @@ function on_hud_render()
 
 			-- animated arrows
 			local arrowAnim = math.sin(spectateAnim.time * 0.15)
-			local arrowOffsetY = arrowAnim * 2
-			local arrowAlpha = 160 + arrowAnim * 60
 
-			local centerX = x + width * 0.5
-			local textY = yCurr + paddingY
+			local prevY = shownY
+			local currY = shownY
 
-			-- background shadow
-			djui_hud_set_color(0, 0, 0, math.floor(100 * tCurr))
-			HU.djui_hud_render_rect_rounded(x + 2, yPrev + 2, width, height, 10)
+			-- Box
+			djui_hud_set_color(18, 18, 22, 180)
+			HU.djui_hud_render_rect_rounded_interpolated(x, prevY, width, height, x, currY, width, height, 8)
 
-			-- main box
-			djui_hud_set_color(18, 18, 22, alpha)
-			HU.djui_hud_render_rect_rounded(x, yCurr, width, height, 8)
-
-			-- text positions
 			local arrowXOffset = textWidth * 0.5 + 12
+			local centerX = x + width * 0.5
+			local prevTextY = prevY + paddingY
+			local currTextY = currY + paddingY
 
-			-- LEFT ARROW
-			djui_hud_set_color(255, 255, 255, arrowAlpha)
-			djui_hud_print_text_with_color_and_outline(
+			-- Left arrow
+			djui_hud_set_color(255, 255, 255, 220)
+			djui_hud_print_text_interpolated(
 				leftArrow,
 				centerX - arrowXOffset,
-				textY + arrowOffsetY,
+				prevTextY,
 				nameScale,
-				255,
-				2
+				centerX - arrowXOffset,
+				currTextY,
+				nameScale
 			)
 
-			-- NAME
+			-- Name
 			djui_hud_set_color(255, 255, 255, 255)
-			djui_hud_print_text_with_color_and_outline(
+			djui_hud_print_text_interpolated(
 				playerName,
-				centerX - (textWidth * 0.5),
-				textY,
+				centerX - textWidth * 0.5,
+				prevTextY,
 				nameScale,
-				255,
-				2
+				centerX - textWidth * 0.5,
+				currTextY,
+				nameScale
 			)
 
-			-- RIGHT ARROW
-			djui_hud_set_color(255, 255, 255, arrowAlpha)
-			djui_hud_print_text_with_color_and_outline(
+			-- Right arrow
+			djui_hud_set_color(255, 255, 255, 220)
+			djui_hud_print_text_interpolated(
 				rightArrow,
 				centerX + arrowXOffset,
-				textY - arrowOffsetY,
+				prevTextY,
 				nameScale,
-				255,
-				2
+				centerX + arrowXOffset,
+				currTextY,
+				nameScale
 			)
 		end
 	elseif gGlobalSyncTable.gameState == GAME_STATE_MINI_END then

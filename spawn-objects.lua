@@ -1405,76 +1405,80 @@ function move_selection(m)
 
 	-- if dpadUDFree == 0 then
 	if dpadUDFree == false then
-		if buttons & U_JPAD ~= 0 then
-			if inSubmenu then
-				selectedObjectInCat[selectedCategory] = (selectedObjectInCat[selectedCategory] or 1) - 1
+		if spawnMenu then
+			if buttons & U_JPAD ~= 0 then
+				if inSubmenu then
+					selectedObjectInCat[selectedCategory] = (selectedObjectInCat[selectedCategory] or 1) - 1
+				else
+					selectedCategory = selectedCategory - 1
+				end
+			elseif buttons & D_JPAD ~= 0 then
+				if inSubmenu then
+					selectedObjectInCat[selectedCategory] = (selectedObjectInCat[selectedCategory] or 1) + 1
+				else
+					selectedCategory = selectedCategory + 1
+				end
+			elseif buttons & L_JPAD ~= 0 then
+				if inSubmenu then
+					inSubmenu = false
+					play_sound(SOUND_MENU_CHANGE_SELECT, m.marioObj.header.gfx.cameraToObject)
+					return
+				else
+					selectedCategory = selectedCategory - 1
+				end
+			elseif buttons & R_JPAD ~= 0 then
+				if not inSubmenu then
+					inSubmenu = true
+					if not selectedObjectInCat[selectedCategory] then
+						selectedObjectInCat[selectedCategory] = 1
+					end
+					play_sound(SOUND_MENU_CHANGE_SELECT, m.marioObj.header.gfx.cameraToObject)
+					return
+				else
+					selectedObjectInCat[selectedCategory] = (selectedObjectInCat[selectedCategory] or 1) + 5
+				end
 			else
-				selectedCategory = selectedCategory - 1
-			end
-		elseif buttons & D_JPAD ~= 0 then
-			if inSubmenu then
-				selectedObjectInCat[selectedCategory] = (selectedObjectInCat[selectedCategory] or 1) + 1
-			else
-				selectedCategory = selectedCategory + 1
-			end
-		elseif buttons & L_JPAD ~= 0 then
-			if inSubmenu then
-				inSubmenu = false
-				play_sound(SOUND_MENU_CHANGE_SELECT, m.marioObj.header.gfx.cameraToObject)
 				return
-			else
-				selectedCategory = selectedCategory - 1
 			end
-		elseif buttons & R_JPAD ~= 0 then
-			if not inSubmenu then
+		end
+	-- dpadUDFree == 1 , means that dpad right and left are not used
+	else
+		if spawnMenu then
+			if buttons & R_JPAD ~= 0 then
+				if inSubmenu then
+					selectedObjectInCat[selectedCategory] = (selectedObjectInCat[selectedCategory] or 1) + 1
+				else
+					selectedCategory = selectedCategory + 1
+				end
+			-- elseif buttons & L_JPAD ~= 0 then
+			--     if inSubmenu then
+			--         inSubmenu = false
+			--         play_sound(SOUND_MENU_CHANGE_SELECT, m.marioObj.header.gfx.cameraToObject)
+			--         return
+			--     else
+			--         selectedCategory = selectedCategory - 1
+			--     end
+			elseif buttons & L_JPAD ~= 0 then
+				if inSubmenu then
+					selectedObjectInCat[selectedCategory] = (selectedObjectInCat[selectedCategory] or 1) - 1
+				else
+					selectedCategory = selectedCategory - 1
+				end
+			elseif buttons & X_BUTTON ~= 0 and not inSubmenu then
+				-- X button now enters the submenu (from main menu only)
 				inSubmenu = true
 				if not selectedObjectInCat[selectedCategory] then
 					selectedObjectInCat[selectedCategory] = 1
 				end
 				play_sound(SOUND_MENU_CHANGE_SELECT, m.marioObj.header.gfx.cameraToObject)
 				return
+			elseif buttons & Y_BUTTON ~= 0 and inSubmenu then
+				inSubmenu = false
+				play_sound(SOUND_MENU_CHANGE_SELECT, m.marioObj.header.gfx.cameraToObject)
+				return
 			else
-				selectedObjectInCat[selectedCategory] = (selectedObjectInCat[selectedCategory] or 1) + 5
+				return
 			end
-		else
-			return
-		end
-	-- dpadUDFree == 1 , means that dpad right and left are not used
-	else
-		if buttons & R_JPAD ~= 0 then
-			if inSubmenu then
-				selectedObjectInCat[selectedCategory] = (selectedObjectInCat[selectedCategory] or 1) + 1
-			else
-				selectedCategory = selectedCategory + 1
-			end
-		-- elseif buttons & L_JPAD ~= 0 then
-		--     if inSubmenu then
-		--         inSubmenu = false
-		--         play_sound(SOUND_MENU_CHANGE_SELECT, m.marioObj.header.gfx.cameraToObject)
-		--         return
-		--     else
-		--         selectedCategory = selectedCategory - 1
-		--     end
-		elseif buttons & L_JPAD ~= 0 then
-			if inSubmenu then
-				selectedObjectInCat[selectedCategory] = (selectedObjectInCat[selectedCategory] or 1) - 1
-			else
-				selectedCategory = selectedCategory - 1
-			end
-		elseif buttons & X_BUTTON ~= 0 and not inSubmenu then
-			-- X button now enters the submenu (from main menu only)
-			inSubmenu = true
-			if not selectedObjectInCat[selectedCategory] then
-				selectedObjectInCat[selectedCategory] = 1
-			end
-			play_sound(SOUND_MENU_CHANGE_SELECT, m.marioObj.header.gfx.cameraToObject)
-			return
-		elseif buttons & Y_BUTTON ~= 0 and inSubmenu then
-			inSubmenu = false
-			play_sound(SOUND_MENU_CHANGE_SELECT, m.marioObj.header.gfx.cameraToObject)
-			return
-		else
-			return
 		end
 	end
 
@@ -1491,8 +1495,6 @@ function move_selection(m)
 			selectedCategory = ((selectedCategory - 1) % numCats) + 1
 		end
 	end
-
-	play_sound(SOUND_MENU_CHANGE_SELECT, m.marioObj.header.gfx.cameraToObject)
 end
 
 -- packets used to:

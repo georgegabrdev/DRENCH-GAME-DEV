@@ -1,4 +1,4 @@
--- name: \\#00ffd5\\Drench Game Deluxe v1.2.4.1 [WIP]
+-- name: \\#00ffd5\\Drench Game Deluxe v1.2.5 [WIP]
 -- description: Squid Game in Mario 64!\n\nCommissioned by Drenchy\nInspired by Dani's \"Crab Game\"\n\nProgramming: EmilyEmmi\n\nMaps: biobak, EmilyEmmi, Woissil\n\nSoundtrack: murioz, Awesome Seal Guy (YT)\n\nVoice Acting:\nEspi as Toad\nSqueex as Mingle Callout\nTrashcam as Waluigi\n\nAds: Squeex's Community\n\nSpecial Thanks: Squishy
 -- category: gamemode
 -- incompatible: gamemode
@@ -29,8 +29,9 @@ GAME_MODE_DICE = 7
 GAME_MODE_COIN_RAIN = 8
 GAME_MODE_DEATH_HIT = 9
 GAME_MODE_BROKEN_LAMP = 10
-GAME_MODE_DUEL = 11 -- needs to be at the end due to its special nature
-GAME_MODE_MAX = 12
+GAME_MODE_MEMORY_BRIDGE = 11
+GAME_MODE_DUEL = 12 -- needs to be at the end due to its special nature
+GAME_MODE_MAX = 13
 
 TEAM_SELECTION_RANDOM = 0
 TEAM_SELECTION_HOST = 1
@@ -49,6 +50,8 @@ LEVEL_TOAD_TOWN = level_register("level_toad_town_entry", COURSE_NONE, "Toad Tow
 LEVEL_KOOPA_KEEP =
 	level_register("level_bowser_castle_entry", COURSE_NONE, "Koopa Keep", "koopakeep", 28000, 0x28, 0x28, 0x28)
 LEVEL_TEST = level_register("level_test_entry", COURSE_NONE, "Test Level", "test", 28000, 0x28, 0x28, 0x28)
+LEVEL_GLASS_ALT =
+	level_register("level_mbridge_entry", COURSE_NONE, "Memory Bridge", "mbridge", 28000, 0x28, 0x28, 0x28)
 gLevelValues.entryLevel = LEVEL_LOBBY
 warp_to_level(LEVEL_LOBBY, 1, 0)
 
@@ -261,7 +264,54 @@ function sync_setup()
 	end
 end
 
+-- Sync setup function (it's mostly a copy of the one for LEVEL_GLASS in the base mod)
+function setup_memory_bridge()
+	local toEliminate = calculate_players_to_eliminate(not gGlobalSyncTable.eliminationMode, true)
+
+	-- assign each pane its break status
+	local glass = obj_get_first_with_behavior_id_and_field_s32(id_bhvGlass, 0x2F, 0)
+	-- the amount of panes can't exceed what we intend to eliminate plus 4, to ensure elimination games don't end really easily
+	-- (this is about double from the original plus 4)
+	local totalPanes = math.max(toEliminate + 8, 10)
+	local row = 0
+	while glass do
+		if row >= totalPanes then
+			glass.oBobombFuseTimer = 2
+			local otherGlass = obj_get_next_with_same_behavior_id_and_field_s32(glass, 0x2F, row)
+			if otherGlass then
+				otherGlass.oBobombFuseTimer = 2
+			end
+			network_send_object(glass, true)
+			if otherGlass then
+				network_send_object(otherGlass, true)
+			end
+		else
+			local otherGlass = obj_get_next_with_same_behavior_id_and_field_s32(glass, 0x2F, row)
+			local glassBreak = math.random(0, 1)
+			if glassBreak == 0 then
+				glass.oBobombFuseTimer = 0
+				if otherGlass then
+					otherGlass.oBobombFuseTimer = 1
+				end
+			else
+				glass.oBobombFuseTimer = 1
+				if otherGlass then
+					otherGlass.oBobombFuseTimer = 0
+				end
+			end
+			network_send_object(glass, true)
+			if otherGlass then
+				network_send_object(otherGlass, true)
+			end
+		end
+
+		row = row + 1
+		glass = obj_get_first_with_behavior_id_and_field_s32(id_bhvGlass, 0x2F, row)
+	end
+end
+
 hook_event(HOOK_ON_SYNC_VALID, sync_setup)
+hook_event(HOOK_ON_SYNC_VALID, setup_memory_bridge)
 
 localWasEliminated = false
 local finalWaterHeight = 0
@@ -2041,6 +2091,7 @@ function desync_fix_command(msg)
 	djui_chat_message_create("Attempting to correct desync...")
 	return true
 end
+
 hook_chat_command("desync", "- Attempt to fix desync issues", desync_fix_command)
 
 require("./m-tags")

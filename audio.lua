@@ -102,6 +102,14 @@ local musicData = {
 		musicName = "Slider Casino III - Drench Game",
 	},
 
+	stealth = {
+		audio = audio_stream_load("music-stealth.ogg"),
+		loop = true,
+		loopStart = 0,
+		loopEnd = -1,
+		musicName = "Stealth - Deltarune",
+	},
+
 	finalOutro = {
 		audio = audio_stream_load("music-final-outro.ogg"),
 	},
