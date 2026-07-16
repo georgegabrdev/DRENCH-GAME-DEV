@@ -988,6 +988,21 @@ menu_data = {
 			end,
 		},
 		{
+			"Auto Start Game",
+			function(x)
+				gGlobalSyncTable.autoGame = (x == 0) -- On = true, Off = false
+			end,
+			true,
+			runOnChange = true,
+			currNum = gGlobalSyncTable.autoGame and 0 or 1,
+			minNum = 0,
+			maxNum = 1,
+			nameRef = {
+				"\\#50ff50\\On",
+				"\\#ff5050\\Off",
+			},
+		},
+		{
 			"Cancel Game",
 			function()
 				if cancelTime >= get_time() - 5 then
@@ -1076,6 +1091,20 @@ menu_data = {
 			maxNum = 2,
 			nameRef = { "\\#50ff50\\On", "\\#ff5050\\Off", "Mingle Only" },
 			save = "disableMusic",
+			localSave = true,
+		},
+		{
+			"Colorblind Mode",
+			function(x)
+				showColorNames = (x ~= 0)
+			end,
+			false,
+			runOnChange = true,
+			currNum = 0,
+			minNum = 0,
+			maxNum = 1,
+			nameRef = { "\\#ff5050\\Off", "\\#50ff50\\On" },
+			save = "showColorNames",
 			localSave = true,
 		},
 		{

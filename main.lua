@@ -58,14 +58,14 @@ warp_to_level(LEVEL_LOBBY, 1, 0)
 -- team data (copied from Kart Battles)
 -- in order: light color, dark color, full name (+ color code), short name
 TEAM_DATA = {
-	{ { r = 225, g = 5, b = 49 }, { r = 80, g = 20, b = 20 }, "\\#ff4040\\Red Team", "Red" }, -- red (modified ruby)
-	{ { r = 0x00, g = 0x2f, b = 0xc8 }, { r = 20, g = 40, b = 80 }, "\\#4040ff\\Blue Team", "Blu" }, -- blue (modified cobalt)
-	{ { r = 0x20, g = 0xc8, b = 0x20 }, { r = 20, g = 80, b = 20 }, "\\#40ff40\\Green Team", "Grn" }, -- green (modified clover)
-	{ { r = 0xe7, g = 0xe7, b = 0x21 }, { r = 80, g = 80, b = 20 }, "\\#ffff40\\Yellow Team", "Ylw" }, -- yellow (modified busy bee)
-	{ { r = 0xff, g = 0x8a, b = 0x00 }, { r = 80, g = 50, b = 20 }, "\\#ffa014\\Orange Team", "Org" }, -- orange (modified... orange)
-	{ { r = 0x5a, g = 0x94, b = 0xff }, { r = 20, g = 50, b = 80 }, "\\#40ffff\\Cyan Team", "Cyn" }, -- cyan (modified azure)
-	{ { r = 0xff, g = 0x8e, b = 0xb2 }, { r = 0x82, g = 0x10, b = 0x27 }, "\\#ffa1eb\\Pink Team", "Pnk" }, -- pink (modified bubblegum)
-	{ { r = 0x71, g = 0x36, b = 0xc8 }, { r = 0x26, g = 0x26, b = 0x47 }, "\\#a040ff\\Violet Team", "Vlt" }, -- violet (modified waluigi)
+	{ { r = 225, g = 5, b = 49 }, { r = 80, g = 20, b = 20 }, "#ff4040Red Team", "Red" }, -- red (modified ruby)
+	{ { r = 0x00, g = 0x2f, b = 0xc8 }, { r = 20, g = 40, b = 80 }, "#4040ffBlue Team", "Blu" }, -- blue (modified cobalt)
+	{ { r = 0x20, g = 0xc8, b = 0x20 }, { r = 20, g = 80, b = 20 }, "#40ff40Green Team", "Grn" }, -- green (modified clover)
+	{ { r = 0xe7, g = 0xe7, b = 0x21 }, { r = 80, g = 80, b = 20 }, "#ffff40Yellow Team", "Ylw" }, -- yellow (modified busy bee)
+	{ { r = 0xff, g = 0x8a, b = 0x00 }, { r = 80, g = 50, b = 20 }, "#ffa014Orange Team", "Org" }, -- orange (modified... orange)
+	{ { r = 0x5a, g = 0x94, b = 0xff }, { r = 20, g = 50, b = 80 }, "#40ffffCyan Team", "Cyn" }, -- cyan (modified azure)
+	{ { r = 0xff, g = 0x8e, b = 0xb2 }, { r = 0x82, g = 0x10, b = 0x27 }, "#ffa1ebPink Team", "Pnk" }, -- pink (modified bubblegum)
+	{ { r = 0x71, g = 0x36, b = 0xc8 }, { r = 0x26, g = 0x26, b = 0x47 }, "#a040ffViolet Team", "Vlt" }, -- violet (modified waluigi)
 }
 
 SELECT_MODE_CHOOSE = 0
@@ -94,6 +94,7 @@ gGlobalSyncTable.gameModeSelection = SELECT_MODE_RANDOM
 gGlobalSyncTable.selectedMode = -1
 gGlobalSyncTable.percentToStart = 75
 gGlobalSyncTable.forceStart = false
+gGlobalSyncTable.autoGame = false
 gGlobalSyncTable.allDuel = false
 gGlobalSyncTable.gameLevelOverride = -1
 gGlobalSyncTable.teamCount = 0
@@ -124,6 +125,7 @@ rejoin_data = {}
 rejoin_check = {}
 csVersion = (charSelectExists and charSelect.version_get_full().major) or 0
 disableMusic = 0
+showColorNames = false
 
 local WI = require("./b-wins")
 local MWI = require("./c-mWins")
@@ -185,6 +187,13 @@ function load_on_sync()
 		on_packet_rejoin(waitRejoinData, true)
 		waitRejoinData = nil
 	end
+
+	-- check for clean install
+	if network_is_server() and mod_file_exists("sound/lobby.ogg") then
+		djui_chat_message_create(
+			"\\#ff5\\NOTICE:\nIt appears you did NOT perform a clean install of Drench Game.\nTo reduce download times, remove the mod and then reinstall the latest version."
+		)
+	end
 end
 
 hook_event(HOOK_ON_SYNC_VALID, load_on_sync)
@@ -208,6 +217,10 @@ hook_event(HOOK_ON_LEVEL_INIT, starting_setup)
 hook_event(HOOK_ON_SYNC_VALID, WI.load_wins)
 hook_event(HOOK_ON_SYNC_VALID, MWI.load_m_wins)
 
+if gGlobalSyncTable.autoGame then
+	gGlobalSyncTable.forceStart = true
+end
+
 -- setup on sync, for Glass Bridge
 function sync_setup()
 	set_to_spawn_pos(gMarioStates[0], true)
@@ -216,53 +229,13 @@ function sync_setup()
 	end
 
 	local np = gNetworkPlayers[0]
-	if np.currLevelNum == LEVEL_GLASS then
-		local toEliminate = calculate_players_to_eliminate(not gGlobalSyncTable.eliminationMode, true)
-
-		-- assign each pane its break status
-		local glass = obj_get_first_with_behavior_id_and_field_s32(id_bhvGlass, 0x2F, 0)
-		-- the amount of panes can't exceed half we intend to eliminate plus 2, to ensure elimination games don't end really easily
-		local totalPanes = clamp(math.ceil(toEliminate / 2) + 2, 3, 10)
-		local row = 0
-		while glass do
-			if row >= totalPanes then
-				glass.oBobombFuseTimer = 2
-				local otherGlass = obj_get_next_with_same_behavior_id_and_field_s32(glass, 0x2F, row)
-				if otherGlass then
-					otherGlass.oBobombFuseTimer = 2
-				end
-				network_send_object(glass, true)
-				if otherGlass then
-					network_send_object(otherGlass, true)
-				end
-			else
-				local otherGlass = obj_get_next_with_same_behavior_id_and_field_s32(glass, 0x2F, row)
-				local glassBreak = math.random(0, 1)
-				if glassBreak == 0 then
-					glass.oBobombFuseTimer = 0
-					if otherGlass then
-						otherGlass.oBobombFuseTimer = 1
-					end
-				else
-					glass.oBobombFuseTimer = 1
-					if otherGlass then
-						otherGlass.oBobombFuseTimer = 0
-					end
-				end
-				if DEBUG_MODE then
-					log_to_console(tostring(row) .. ": " .. tostring(glassBreak))
-				end
-				network_send_object(glass, true)
-				if otherGlass then
-					network_send_object(otherGlass, true)
-				end
-			end
-
-			row = row + 1
-			glass = obj_get_first_with_behavior_id_and_field_s32(id_bhvGlass, 0x2F, row)
-		end
+	local levelSetup = LEVEL_SYNC_SETUP[np.currLevelNum]
+	if levelSetup then
+		levelSetup()
 	end
 end
+
+hook_event(HOOK_ON_SYNC_VALID, sync_setup)
 
 -- Sync setup function (it's mostly a copy of the one for LEVEL_GLASS in the base mod)
 function setup_memory_bridge()
@@ -440,13 +413,11 @@ function mario_update(m)
 			then
 				afkTimer = afkTimer + 1
 				if afkTimer == 50 * 30 then
-					djui_chat_message_create(
-						"\\#ff5050\\You will be forced to spectate if you don't move in 10 seconds!"
-					)
+					djui_chat_message_create("#ff5050You will be forced to spectate if you don't move in 10 seconds!")
 				elseif afkTimer >= 60 * 30 then
 					afkSpectator = true
 					toggle_spectator()
-					djui_chat_message_create("\\#ff5050\\You were made a spectator. Move again to cancel.")
+					djui_chat_message_create("#ff5050You were made a spectator. Move again to cancel.")
 				end
 			end
 		else
@@ -679,6 +650,16 @@ function mario_update(m)
 				color = { r = 255, g = 80, b = 80 }
 			end
 		else
+			if showColorNames then
+				if desc == "Finished" then
+					desc = "Done"
+				elseif desc == "Waiting..." then
+					desc = "Idle"
+				elseif desc == "Ready!" then
+					desc = "OK!"
+				end
+				desc = TEAM_DATA[sMario.team][4] .. ": " .. desc
+			end
 			color = TEAM_DATA[sMario.team][1]
 			if not (highlight or yellow) then
 				alpha = 100
@@ -795,7 +776,7 @@ function mario_update(m)
 				local maxPossibleScore = gData.mercyRuleScale
 					* math.ceil((roundTime - gGlobalSyncTable.roundTimer) / 30)
 				maxPossibleScore = sMario.roundScore + maxPossibleScore
-				if roundTime ~= 0 and maxPossibleScore < storedSafeScore then
+				if roundTime ~= 0 and maxPossibleScore < storedSafeScore and storedSafeScore ~= 9999 then
 					local alivePlayers = 0
 					for_each_connected_player(function(index)
 						local sMario2 = gPlayerSyncTable[index]
@@ -810,7 +791,7 @@ function mario_update(m)
 					if alivePlayers == 2 then -- exactly two left (if we allowed one, both would be eliminated since the safe score would briefly be 999)
 						eliminate_mario(m)
 						djui_chat_message_create(
-							"\\#ff5050\\Eliminated by mercy rule-\nyou can't earn enough points to win."
+							"#ff5050Eliminated by mercy rule-\nyou can't earn enough points to win."
 						)
 					end
 				end
@@ -1285,6 +1266,8 @@ function update()
 						else
 							sMario.earnedPoints = 20
 						end
+					elseif gData.losePointCalcFunc then
+						sMario.earnedPoints = gData.losePointCalcFunc(i) or 0
 					elseif
 						(gData.doEliminationPoints or gData.autoElimination)
 						and gGlobalSyncTable.round > 1
@@ -1306,7 +1289,7 @@ function update()
 				if didMultiplier and not is_final_duel() then
 					network_send_include_self(
 						true,
-						{ id = PACKET_GLOBAL_MSG, text = "\\#ffff50\\Points adjusted to account for uneven teams." }
+						{ id = PACKET_GLOBAL_MSG, text = "#ffff50Points adjusted to account for uneven teams." }
 					)
 				end
 			elseif gData.victoryFunc then
@@ -1501,7 +1484,7 @@ end
 
 hook_event(HOOK_ON_DEATH, on_death)
 
--- make bomb tag players move slightly faster
+-- make bomb tag players move slightly faster; also runs any mode-specific physics step behavior
 function before_phys_step(m, stepType)
 	if gGlobalSyncTable.gameState ~= GAME_STATE_ACTIVE then
 		return
@@ -1514,6 +1497,11 @@ function before_phys_step(m, stepType)
 	then -- don't affect custom or knockback actions
 		m.vel.x = m.vel.x * 1.1
 		m.vel.z = m.vel.z * 1.1
+	end
+
+	local gData = GAME_MODE_DATA[gGlobalSyncTable.gameMode or 0]
+	if gData and gData.beforePhysStepFunc then
+		return gData.beforePhysStepFunc(m, stepType)
 	end
 end
 hook_event(HOOK_BEFORE_PHYS_STEP, before_phys_step)
@@ -1564,7 +1552,7 @@ function dice_block_chance_change(tag, oldVal, newVal)
 
 	local dieMax = 20
 	local chance = math.min(newVal + 1, dieMax)
-	text = string.format("\\#ffff50\\You now have a %d%% chance of getting a kill!", chance * 100 / dieMax)
+	text = string.format("#ffff50You now have a %d%% chance of getting a kill!", chance * 100 / dieMax)
 	djui_chat_message_create(text)
 end
 hook_on_sync_table_change(gPlayerSyncTable[0], "roundScore", "roundScore", dice_block_chance_change)
@@ -1585,15 +1573,25 @@ hook_event(HOOK_ON_INTERACT, function(m, obj, intType)
 end)
 
 -- don't display nametags in lights out
-function on_nametags_render(index)
+function on_nametags_render(index, pos)
+	local name = network_get_player_text_color_string(index) .. gNetworkPlayers[index].name
+	local team = gPlayerSyncTable[index].team or 0
+	if team > 0 and team <= #TEAM_DATA then
+		if showColorNames then
+			name = "(" .. TEAM_DATA[team][4] .. ") " .. name
+		end
+		name = TEAM_DATA[team][3]:sub(1, 9) .. get_uncolored_string(name)
+	end
+
 	if gGlobalSyncTable.gameState ~= GAME_STATE_ACTIVE then
-		return
+		return name
 	end
 
 	local gData = GAME_MODE_DATA[gGlobalSyncTable.gameMode]
 	if gData and gData.nametagFunc then
-		return gData.nametagFunc(index)
+		return gData.nametagFunc(index, pos, name) or name
 	end
+	return name
 end
 
 hook_event(HOOK_ON_NAMETAGS_RENDER, on_nametags_render)
@@ -1605,7 +1603,7 @@ function on_player_connected(m)
 	local color = network_get_player_text_color_string(m.playerIndex)
 	local name = gNetworkPlayers[m.playerIndex].name
 
-	djui_chat_message_create(color .. name .. " \\#ffffff\\connected.")
+	djui_chat_message_create(color .. name .. " #ffffffconnected.")
 end
 
 hook_event(HOOK_ON_PLAYER_CONNECTED, on_player_connected)
@@ -1665,9 +1663,7 @@ function on_player_disconnected(m)
 			if #teammates ~= 0 then
 				local name = network_get_player_text_color_string(m.playerIndex) .. gNetworkPlayers[m.playerIndex].name
 				local teamName = TEAM_DATA[sMario.team][3] or "???"
-				djui_chat_message_create(
-					name .. "'s\\#ffff50\\ points were distributed among " .. teamName .. "\\#ffff50\\."
-				)
+				djui_chat_message_create(name .. "'s#ffff50 points were distributed among " .. teamName .. "#ffff50.")
 
 				if network_is_server() then
 					-- Reset points so we don't get them back when rejoining
@@ -1694,7 +1690,7 @@ function on_player_disconnected(m)
 
 	if rejoinID and ((not eliminated) or sMario.points ~= 0 or sMario.earnedPoints ~= 0 or roundScore ~= 0) then
 		local name = network_get_player_text_color_string(m.playerIndex) .. get_display_name(m.playerIndex)
-		djui_chat_message_create(name .. "\\#ffff50\\ can rejoin to restore their progress.")
+		djui_chat_message_create(name .. "#ffff50 can rejoin to restore their progress.")
 		if not network_is_server() then
 			return
 		end
@@ -1866,9 +1862,9 @@ function on_packet_star_steal(data, self)
 		end
 		vName = vPlayerColor .. vName
 
-		djui_popup_create(aName .. "\\#ffffff\\ stole " .. vName .. "\\#ffffff\\ \\#ffff50\\Star\\#ffffff\\!", 1)
+		djui_popup_create(aName .. "#ffffff stole " .. vName .. "#ffffff #ffff50Star#ffffff!", 1)
 	else
-		djui_popup_create(aName .. "\\#ffffff\\ stole the \\#ffff50\\Star\\#ffffff\\!", 1)
+		djui_popup_create(aName .. "#ffffff stole the #ffff50Star#ffffff!", 1)
 	end
 end
 
@@ -1895,10 +1891,12 @@ function on_packet_rejoin(data, self)
 		return
 	end
 
-	djui_chat_message_create("\\#ffff50\\Your progress was restored!")
+	djui_chat_message_create("#ffff50Your progress was restored!")
 	local sMario = gPlayerSyncTable[0]
 	sMario.points = data.points or 0
 	sMario.team = data.team or sMario.team
+	sMario.gameWins = data.gameWins or sMario.gameWins
+	sMario.minigameWins = data.minigameWins or sMario.minigameWins
 	-- only restore certain values if we're on the same mini game we left on
 	if gGlobalSyncTable.miniGameNum == data.leftMiniGame and gGlobalSyncTable.gameState ~= GAME_STATE_SCORES then
 		sMario.roundScore = data.roundScore or 0
@@ -1925,7 +1923,7 @@ function on_packet_mod_choose(data, self)
 	if not inMenu then
 		enter_menu(3)
 	end
-	djui_chat_message_create("\\#ffff50\\Since you're the first moderator available, you will pick this minigame!")
+	djui_chat_message_create("#ffff50Since you're the first moderator available, you will pick this minigame!")
 end
 
 function on_packet_global_msg(data, self)
@@ -1943,10 +1941,10 @@ function on_packet_kill(data, self)
 	end
 	local name = network_get_player_text_color_string(np.localIndex) .. np.name
 	if not gGlobalSyncTable.freezeRoundTimer then
-		djui_chat_message_create("\\#ffff50\\You killed " .. name .. "!\n\\#ffff50\\Got a full heal!")
+		djui_chat_message_create("#ffff50You killed " .. name .. "!\n#ffff50Got a full heal!")
 		gMarioStates[0].healCounter = 31
 	else
-		djui_chat_message_create("\\#ffff50\\You killed " .. name .. "!")
+		djui_chat_message_create("#ffff50You killed " .. name .. "!")
 	end
 end
 
@@ -2027,7 +2025,7 @@ function on_packet_desync_fix(data, self)
 end
 
 function on_packet_dice_roll(data, self)
-	local text = string.format("\\#ffff50\\You rolled %d (needed %d+). ", data.roll, data.chance)
+	local text = string.format("#ffff50You rolled %d (needed %d+). ", data.roll, data.chance)
 	if data.roll < data.chance then
 		text = text .. "You got unlucky..."
 		djui_chat_message_create(text)
@@ -2084,7 +2082,7 @@ function desync_fix_command(msg)
 		})
 	else
 		djui_chat_message_create(
-			"\\#ff5050\\You have permission to perform this command... or DO you?\n(No, you don't have moderator)"
+			"#ff5050You have permission to perform this command... or DO you?\n(No, you don't have moderator)"
 		)
 		return true
 	end

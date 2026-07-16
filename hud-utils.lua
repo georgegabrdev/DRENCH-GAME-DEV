@@ -639,6 +639,12 @@ function HU.print_colored_text_interpolated(text, prevX, prevY, currX, currY, sc
 	djui_hud_set_color(c.r, c.g, c.b, c.a)
 end
 
+function HU.three_value_hex(str)
+	return str:gsub("\\#(%x)(%x)(%x)\\", function(r, g, b)
+		return string.format("\\#%s%s%s%s%s%s\\", r, r, g, g, b, b)
+	end)
+end
+
 function HU.normalize_text(str)
 	str = tostring(str or "")
 	str = HU.three_value_hex(str)

@@ -9,14 +9,14 @@ GAME_MODE_DATA = {
 		name = "Glass Bridge",
 		desc = "Get across the bridge without falling! Only one glass pane is safe in each row. Will you push your luck, or let someone else take the fall?",
 		level = LEVEL_GLASS,
-		interact = PLAYER_INTERACTIONS_NONE,
-		kbStrength = 0,
+		interact = PLAYER_INTERACTIONS_SOLID,
+		kbStrength = 5,
 		music = "dire",
 		marioUpdateFunc = function(m) -- switch to custom falling action
 			if
 				m.action & ACT_GROUP_MASK ~= ACT_GROUP_CUTSCENE
 				and m.action ~= ACT_GB_FALL
-				and m.action ~= ACT_BUBBLED
+				and m.action ~= ACT_SPECTATE
 				and m.floor
 				and m.floor.type == SURFACE_DEATH_PLANE
 				and m.vel.y <= -75
@@ -27,7 +27,7 @@ GAME_MODE_DATA = {
 		end,
 		victoryFunc = function(m)
 			if m.action & ACT_FLAG_AIR == 0 and m.floor and m.floor.type == SURFACE_TIMER_END then
-				if gPlayerSyncTable[m.playerIndex].earnedPoints >= 20 then
+				if gPlayerSyncTable[m.playerIndex].roundScore >= 10 then
 					return true
 				elseif m.playerIndex == 0 then
 					play_sound(SOUND_MENU_CAMERA_BUZZ, gGlobalSoundSource)
@@ -41,7 +41,6 @@ GAME_MODE_DATA = {
 			-- spawn thwomps for all players
 			for i = 0, MAX_PLAYERS - 1 do
 				local m = gMarioStates[i]
-				local sMario = gPlayerSyncTable[i]
 				spawn_object_no_rotate(id_bhvGBThwomp, E_MODEL_THWOMP, m.pos.x, m.pos.y + 1000, m.pos.z, function(o)
 					o.oBehParams = i
 				end, false)
@@ -51,7 +50,7 @@ GAME_MODE_DATA = {
 			local sAttacker = gPlayerSyncTable[attacker.playerIndex]
 			local sVictim = gPlayerSyncTable[victim.playerIndex]
 
-			if sAttacker.earnedPoints == 0 or sVictim.earnedPoints == 0 then
+			if sAttacker.roundScore == 0 or sVictim.roundScore == 0 then
 				return false
 			end
 		end,
@@ -106,7 +105,7 @@ GAME_MODE_DATA = {
 				})
 			end
 		end,
-		nametagFunc = function(index)
+		nametagFunc = function(index, pos, name)
 			-- disable nametags unless we are spectating
 			if index ~= 0 and gMarioStates[0].action ~= ACT_SPECTATE then
 				return ""
@@ -246,12 +245,12 @@ GAME_MODE_DATA = {
 					end
 					maxPlayerCount = clamp(maxPlayerCount, 1, 4)
 					gGlobalSyncTable.minglePlayerCount = math.random(1, maxPlayerCount)
-					gGlobalSyncTable.mingleMaxDoors = 8
+					local mingleMaxDoors = 8
 					-- after 2 rounds, there will be a limited number of doors available
 					if DEBUG_MODE or gGlobalSyncTable.round > 2 then
-						gGlobalSyncTable.mingleMaxDoors = maxPlayerCount // gGlobalSyncTable.minglePlayerCount
+						mingleMaxDoors = maxPlayerCount // gGlobalSyncTable.minglePlayerCount
 						if DEBUG_MODE then
-							gGlobalSyncTable.mingleMaxDoors = 3
+							mingleMaxDoors = 3
 						end
 
 						local mingleDoorsOpen = 0 -- bitwise value representing which doors are open
@@ -259,7 +258,7 @@ GAME_MODE_DATA = {
 						for i = 0, 7 do
 							table.insert(availableToOpen, i)
 						end
-						for i = 1, gGlobalSyncTable.mingleMaxDoors do
+						for i = 1, mingleMaxDoors do
 							local tableIndex = math.random(1, #availableToOpen)
 							local door = availableToOpen[tableIndex]
 							table.remove(availableToOpen, tableIndex)
@@ -267,6 +266,8 @@ GAME_MODE_DATA = {
 						end
 						gGlobalSyncTable.mingleDoorsOpen = mingleDoorsOpen
 					end
+
+					gGlobalSyncTable.mingleMaxDoors = mingleMaxDoors
 					network_send_include_self(true, {
 						id = PACKET_MINGLE_CALLOUT,
 						count = gGlobalSyncTable.minglePlayerCount,
@@ -275,7 +276,7 @@ GAME_MODE_DATA = {
 			end
 		end,
 		kbStrengthOverrideFunc = function()
-			return gGlobalSyncTable.mignleHurry
+			return (gGlobalSyncTable.mingleHurry and 20)
 		end,
 		hudRenderFunc = function(
 			screenWidth,
@@ -311,7 +312,7 @@ GAME_MODE_DATA = {
 	[GAME_MODE_STAR_STEAL] = {
 		name = "Star Steal",
 		desc = "Get the Star, and hold it to increase your score! Hit a player to take the Star from them! You'll be eliminated if your score is too low. Hmmm, this seems familiar...",
-		level = { LEVEL_TOAD_TOWN, LEVEL_KOOPA_KEEP }, -- selects toad town or koopa keep
+		level = MISC_GAME_MAPS, -- selects toad town or koopa keep
 		interact = PLAYER_INTERACTIONS_PVP, -- so invulnerability frames exist
 		firstRoundTime = 90 * 30, -- 1 minute and 30 seconds
 		roundTime = 30 * 30, -- 30 seconds
@@ -397,7 +398,7 @@ GAME_MODE_DATA = {
 	[GAME_MODE_BOMB_TAG] = {
 		name = "Bomb Tag",
 		desc = "Don't hold a Bob-Omb! Tag another player to pass your Bob-Omb to them. If you're holding a Bob-Omb when time runs out... you can probably guess what happens.",
-		level = { LEVEL_TOAD_TOWN, LEVEL_KOOPA_KEEP, LEVEL_LIGHTS_OUT }, -- selects toad town or koopa keep
+		level = MISC_GAME_MAPS, -- selects toad town or koopa keep
 		interact = PLAYER_INTERACTIONS_PVP, -- so invulnerability frames exist
 		kbStrength = 10,
 		roundTime = 30 * 30, -- 30 seconds
@@ -513,10 +514,21 @@ GAME_MODE_DATA = {
 				sMario.holdingBomb = true
 			end
 		end,
+		beforePhysStepFunc = function(m, stepType)
+			-- Speed boost for bomb players; don't affect custom or knockback actions
+			if
+				gPlayerSyncTable[m.playerIndex].holdingBomb
+				and m.action & (ACT_FLAG_INVULNERABLE | ACT_FLAG_CUSTOM_ACTION) == 0
+			then
+				m.vel.x = m.vel.x * 1.1
+				m.vel.z = m.vel.z * 1.1
+			end
+		end,
 	},
 	[GAME_MODE_KOTH] = {
 		name = "King Of The Hill",
-		desc = "Get to the top of the hill! Stand in the circle to increase your score. If your score is too low when time runs out, you'll be eliminated! Stand your ground!",
+		desc = "Get to the top of the hill! Stand in the circle to increase your score. You'll earn more points if you're alone in the circle. If your score is too low when time runs out, you'll be eliminated! Stand your ground!",
+		descTeams = "Get to the top of the hill! Stand in the circle to increase your score. You'll earn more points if only your team is in the circle. If your score is too low when time runs out, you'll be eliminated! Stand your ground!",
 		level = LEVEL_KOTH,
 		interact = PLAYER_INTERACTIONS_PVP, -- so invulnerability frames exist
 		kbStrength = 25,
@@ -525,7 +537,7 @@ GAME_MODE_DATA = {
 		maxRounds = 5,
 		autoElimination = true,
 		doEliminationPoints = true,
-		mercyRuleScale = 10, -- Max points we can gain in 1 second, used to calculate mercy rule
+		mercyRuleScale = 20, -- Max points we can gain in 1 second, used to calculate mercy rule
 		marioUpdateFunc = function(m) -- full health, and that's it
 			m.health = 0x880
 			sonic_set_full_rings(m.playerIndex)
@@ -566,7 +578,6 @@ GAME_MODE_DATA = {
 						if duelTimeUntilBomb > 5 then
 							duelTimeUntilBomb = duelTimeUntilBomb - 1
 						end
-						create_warning_popup("Bombs are falling in the sky!")
 					end
 				else
 					duelBombSpawnTimer = 0
@@ -861,12 +872,17 @@ GAME_MODE_DATA = {
 			end
 			return true
 		end,
+		losePointCalcFunc = function(index)
+			-- Earn 10 points if you get one win
+			local sMario = gPlayerSyncTable[index]
+			return math.min(sMario.roundScore * 10, 20)
+		end,
 	},
 	[GAME_MODE_DICE] = {
 		name = "Dice Block Battle",
-		desc = "Ready to test your luck? You have a 5% chance to kill a player when you hit them, but each failed hit will increase your odds by 10%! Also, getting hit will increase your odds by 5%. Be the last one standing to win!",
-		descElim = "Ready to test your luck? You have a 5% chance to kill a player when you hit them, but each failed hit will increase your odds by 10%! Also, getting hit will increase your odds by 5%. Who will survive?",
-		level = { LEVEL_TOAD_TOWN, LEVEL_KOOPA_KEEP, LEVEL_LIGHTS_OUT }, -- selects toad town or koopa keep
+		desc = "Ready to test your luck? You have a 5% chance to kill a player when you hit them, but each failed roll will increase your odds by 10%! Also, getting hit will increase your odds by 5%. Be the last one standing to win!",
+		descElim = "Ready to test your luck? You have a 5% chance to kill a player when you hit them, but each failed roll will increase your odds by 10%! Also, getting hit will increase your odds by 5%. Who will survive?",
+		level = MISC_GAME_MAPS, -- selects toad town or koopa keep
 		interact = PLAYER_INTERACTIONS_PVP, -- so invulnerability frames exist
 		kbStrength = 25,
 		doPlacementPoints = true,
@@ -912,7 +928,7 @@ GAME_MODE_DATA = {
 					.. gNetworkPlayers[attacker.playerIndex].name
 				local text = string.format("%s\\#ffff50\\ rolled %d (needed %d+). ", name, roll, chance)
 				spawn_orange_number_at_pos(roll, victim.pos.x, victim.pos.y + 25, victim.pos.z, true)
-				if roll >= chance and sVictim.roundScore > 0 then -- this makes it less fun fuck you
+				if roll >= chance then
 					eliminate_mario(victim)
 					text = text .. "RIP..."
 					djui_chat_message_create(text)
@@ -930,19 +946,50 @@ GAME_MODE_DATA = {
 				})
 			end
 		end,
-		nametagFunc = function(index)
+		nametagFunc = function(index, pos, name)
 			-- Add chance to kill on the nametag
+			name = cap_color_text(name, 25)
 			local dieMax = 20
 			local chance = math.min(gPlayerSyncTable[index].roundScore + 1, dieMax)
 			local percent = math.round(chance / dieMax * 100)
-			local name = remove_color(gNetworkPlayers[index].name)
-			return name .. " (" .. percent .. "%)"
+			return name .. "\\#ff5\\ (" .. percent .. "%)"
 		end,
 		hudRenderFunc = function(screenWidth, screenHeight, sideBarLines, lengthLimit)
 			local dieMax = 20
 			local chance = math.min(gPlayerSyncTable[0].roundScore + 1, dieMax)
 			local percent = math.round(chance / dieMax * 100)
 			add_line_to_table(sideBarLines, string.format("\\#ff5050\\Chance to kill: (%d%%)", percent), lengthLimit)
+		end,
+		beforePhysStepFunc = function(m, stepType)
+			local alivePlayers = 0
+			local maxScore = 0
+			for_each_connected_player(function(i)
+				local sMario = gPlayerSyncTable[i]
+				if not sMario.eliminated then
+					alivePlayers = alivePlayers + 1
+					if maxScore < sMario.roundScore then
+						maxScore = sMario.roundScore
+					elseif maxScore == sMario.roundScore then
+						maxScore = 9999 -- No speed boost for anyone
+						return true
+					end
+				end
+				if alivePlayers >= 3 then
+					return true
+				end
+			end)
+
+			local sMario = gPlayerSyncTable[m.playerIndex]
+			if alivePlayers == 2 and sMario.roundScore >= maxScore and not sMario.eliminated then
+				m.vel.x = m.vel.x * 1.1
+				m.vel.z = m.vel.z * 1.1
+				if m.playerIndex == 0 and not prevDiceSpeedBoost then
+					prevDiceSpeedBoost = true
+					djui_chat_message_create("\\#ffff50\\You now have a slight speed boost!")
+				end
+			elseif m.playerIndex == 0 then
+				prevDiceSpeedBoost = false
+			end
 		end,
 	},
 	[GAME_MODE_COIN_RAIN] = {
@@ -1208,6 +1255,55 @@ GAME_MODE_DATA = {
 			return gPlayerSyncTable[index].earnedPoints // 2
 		end,
 	},
+}
+
+LEVEL_SYNC_SETUP = {
+	[LEVEL_GLASS] = function()
+		local toEliminate = calculate_players_to_eliminate(not gGlobalSyncTable.eliminationMode, true)
+
+		-- assign each pane its break status
+		local glass = obj_get_first_with_behavior_id_and_field_s32(id_bhvGlass, 0x2F, 0)
+		-- the amount of panes can't exceed half we intend to eliminate plus 2, to ensure elimination games don't end really easily
+		local totalPanes = math.max(math.ceil(toEliminate / 2) + 2, 3)
+		local row = 0
+		while glass do
+			if row >= totalPanes then
+				glass.oBobombFuseTimer = 2
+				local otherGlass = obj_get_next_with_same_behavior_id_and_field_s32(glass, 0x2F, row)
+				if otherGlass then
+					otherGlass.oBobombFuseTimer = 2
+				end
+				network_send_object(glass, true)
+				if otherGlass then
+					network_send_object(otherGlass, true)
+				end
+			else
+				local otherGlass = obj_get_next_with_same_behavior_id_and_field_s32(glass, 0x2F, row)
+				local glassBreak = math.random(0, 1)
+				if glassBreak == 0 then
+					glass.oBobombFuseTimer = 0
+					if otherGlass then
+						otherGlass.oBobombFuseTimer = 1
+					end
+				else
+					glass.oBobombFuseTimer = 1
+					if otherGlass then
+						otherGlass.oBobombFuseTimer = 0
+					end
+				end
+				if DEBUG_MODE then
+					log_to_console(tostring(row) .. ": " .. tostring(glassBreak))
+				end
+				network_send_object(glass, true)
+				if otherGlass then
+					network_send_object(otherGlass, true)
+				end
+			end
+
+			row = row + 1
+			glass = obj_get_first_with_behavior_id_and_field_s32(id_bhvGlass, 0x2F, row)
+		end
+	end,
 }
 
 LEVEL_SPAWN_DATA = {
