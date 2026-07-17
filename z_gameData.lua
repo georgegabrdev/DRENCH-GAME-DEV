@@ -1,5 +1,6 @@
 local duelSideTimer = 30
 local sonicMingleRingTimer = 0
+local prevDiceSpeedBoost = false
 
 local coinRainSpawnTimer = 0
 local coinRainInterval = 10 -- spawn every 20 frames
@@ -312,7 +313,7 @@ GAME_MODE_DATA = {
 	[GAME_MODE_STAR_STEAL] = {
 		name = "Star Steal",
 		desc = "Get the Star, and hold it to increase your score! Hit a player to take the Star from them! You'll be eliminated if your score is too low. Hmmm, this seems familiar...",
-		level = MISC_GAME_MAPS, -- selects toad town or koopa keep
+		level = { LEVEL_TOAD_TOWN, LEVEL_KOOPA_KEEP }, -- selects toad town or koopa keep
 		interact = PLAYER_INTERACTIONS_PVP, -- so invulnerability frames exist
 		firstRoundTime = 90 * 30, -- 1 minute and 30 seconds
 		roundTime = 30 * 30, -- 30 seconds
@@ -398,7 +399,7 @@ GAME_MODE_DATA = {
 	[GAME_MODE_BOMB_TAG] = {
 		name = "Bomb Tag",
 		desc = "Don't hold a Bob-Omb! Tag another player to pass your Bob-Omb to them. If you're holding a Bob-Omb when time runs out... you can probably guess what happens.",
-		level = MISC_GAME_MAPS, -- selects toad town or koopa keep
+		level = { LEVEL_TOAD_TOWN, LEVEL_KOOPA_KEEP }, -- selects toad town or koopa keep
 		interact = PLAYER_INTERACTIONS_PVP, -- so invulnerability frames exist
 		kbStrength = 10,
 		roundTime = 30 * 30, -- 30 seconds
@@ -575,6 +576,9 @@ GAME_MODE_DATA = {
 							o.oVelY = -50
 							o.oMoveAngleYaw = math.random(0, 0xFFFF)
 						end, true)
+						if duelBombSpawnTimer == 10 * 30 then
+							create_warning_popup("Bombs are falling in the sky!")
+						end
 						if duelTimeUntilBomb > 5 then
 							duelTimeUntilBomb = duelTimeUntilBomb - 1
 						end
@@ -882,7 +886,7 @@ GAME_MODE_DATA = {
 		name = "Dice Block Battle",
 		desc = "Ready to test your luck? You have a 5% chance to kill a player when you hit them, but each failed roll will increase your odds by 10%! Also, getting hit will increase your odds by 5%. Be the last one standing to win!",
 		descElim = "Ready to test your luck? You have a 5% chance to kill a player when you hit them, but each failed roll will increase your odds by 10%! Also, getting hit will increase your odds by 5%. Who will survive?",
-		level = MISC_GAME_MAPS, -- selects toad town or koopa keep
+		level = { LEVEL_TOAD_TOWN, LEVEL_KOOPA_KEEP }, -- selects toad town or koopa keep
 		interact = PLAYER_INTERACTIONS_PVP, -- so invulnerability frames exist
 		kbStrength = 25,
 		doPlacementPoints = true,

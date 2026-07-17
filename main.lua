@@ -413,11 +413,11 @@ function mario_update(m)
 			then
 				afkTimer = afkTimer + 1
 				if afkTimer == 50 * 30 then
-					djui_chat_message_create("#ff5050You will be forced to spectate if you don't move in 10 seconds!")
+					djui_chat_message_create("\\#ff5050\\You will be forced to spectate if you don't move in 10 seconds!")
 				elseif afkTimer >= 60 * 30 then
 					afkSpectator = true
 					toggle_spectator()
-					djui_chat_message_create("#ff5050You were made a spectator. Move again to cancel.")
+					djui_chat_message_create("\\#ff5050\\You were made a spectator. Move again to cancel.")
 				end
 			end
 		else
@@ -574,7 +574,7 @@ function mario_update(m)
 	local yellow = false
 	local desc = ""
 	if sMario.spectator then
-		network_player_set_description(np, "Spectator", 100, 100, 100, 255)
+		network_player_set_description(np, "\\#c8c8c8\\Spectator", 100, 100, 100, 255)
 	elseif gGlobalSyncTable.gameState == GAME_STATE_LOBBY then
 		if sMario.ready then
 			highlight = true
@@ -791,7 +791,7 @@ function mario_update(m)
 					if alivePlayers == 2 then -- exactly two left (if we allowed one, both would be eliminated since the safe score would briefly be 999)
 						eliminate_mario(m)
 						djui_chat_message_create(
-							"#ff5050Eliminated by mercy rule-\nyou can't earn enough points to win."
+							"\\#ff5050\\Eliminated by mercy rule-\nyou can't earn enough points to win."
 						)
 					end
 				end
@@ -1289,7 +1289,7 @@ function update()
 				if didMultiplier and not is_final_duel() then
 					network_send_include_self(
 						true,
-						{ id = PACKET_GLOBAL_MSG, text = "#ffff50Points adjusted to account for uneven teams." }
+						{ id = PACKET_GLOBAL_MSG, text = "\\#ffff50\\Points adjusted to account for uneven teams." }
 					)
 				end
 			elseif gData.victoryFunc then
@@ -1552,7 +1552,7 @@ function dice_block_chance_change(tag, oldVal, newVal)
 
 	local dieMax = 20
 	local chance = math.min(newVal + 1, dieMax)
-	text = string.format("#ffff50You now have a %d%% chance of getting a kill!", chance * 100 / dieMax)
+	text = string.format("\\#ffff50\\You now have a %d%% chance of getting a kill!", chance * 100 / dieMax)
 	djui_chat_message_create(text)
 end
 hook_on_sync_table_change(gPlayerSyncTable[0], "roundScore", "roundScore", dice_block_chance_change)
@@ -1603,7 +1603,7 @@ function on_player_connected(m)
 	local color = network_get_player_text_color_string(m.playerIndex)
 	local name = gNetworkPlayers[m.playerIndex].name
 
-	djui_chat_message_create(color .. name .. " #ffffffconnected.")
+	djui_chat_message_create(color .. name .. " \\#ffffff\\connected.")
 end
 
 hook_event(HOOK_ON_PLAYER_CONNECTED, on_player_connected)
@@ -1663,7 +1663,9 @@ function on_player_disconnected(m)
 			if #teammates ~= 0 then
 				local name = network_get_player_text_color_string(m.playerIndex) .. gNetworkPlayers[m.playerIndex].name
 				local teamName = TEAM_DATA[sMario.team][3] or "???"
-				djui_chat_message_create(name .. "'s#ffff50 points were distributed among " .. teamName .. "#ffff50.")
+				djui_chat_message_create(
+					name .. "'s#\\ffff50\\ points were distributed among " .. teamName .. "#\\ffff50\\."
+				)
 
 				if network_is_server() then
 					-- Reset points so we don't get them back when rejoining
@@ -1690,7 +1692,7 @@ function on_player_disconnected(m)
 
 	if rejoinID and ((not eliminated) or sMario.points ~= 0 or sMario.earnedPoints ~= 0 or roundScore ~= 0) then
 		local name = network_get_player_text_color_string(m.playerIndex) .. get_display_name(m.playerIndex)
-		djui_chat_message_create(name .. "#ffff50 can rejoin to restore their progress.")
+		djui_chat_message_create(name .. "\\#ffff50\\ can rejoin to restore their progress.")
 		if not network_is_server() then
 			return
 		end
@@ -1862,9 +1864,9 @@ function on_packet_star_steal(data, self)
 		end
 		vName = vPlayerColor .. vName
 
-		djui_popup_create(aName .. "#ffffff stole " .. vName .. "#ffffff #ffff50Star#ffffff!", 1)
+		djui_popup_create(aName .. "\\#ffffff\\ stole " .. vName .. "\\#ffffff\\ \\#ffff50\\Star\\#ffffff\\!", 1)
 	else
-		djui_popup_create(aName .. "#ffffff stole the #ffff50Star#ffffff!", 1)
+		djui_popup_create(aName .. "\\#ffffff\\ stole the \\#ffff50\\Star\\#ffffff\\!", 1)
 	end
 end
 
@@ -1891,7 +1893,7 @@ function on_packet_rejoin(data, self)
 		return
 	end
 
-	djui_chat_message_create("#ffff50Your progress was restored!")
+	djui_chat_message_create("\\#ffff50\\Your progress was restored!")
 	local sMario = gPlayerSyncTable[0]
 	sMario.points = data.points or 0
 	sMario.team = data.team or sMario.team
@@ -1923,7 +1925,7 @@ function on_packet_mod_choose(data, self)
 	if not inMenu then
 		enter_menu(3)
 	end
-	djui_chat_message_create("#ffff50Since you're the first moderator available, you will pick this minigame!")
+	djui_chat_message_create("\\#ffff50\\Since you're the first moderator available, you will pick this minigame!")
 end
 
 function on_packet_global_msg(data, self)
@@ -1941,10 +1943,10 @@ function on_packet_kill(data, self)
 	end
 	local name = network_get_player_text_color_string(np.localIndex) .. np.name
 	if not gGlobalSyncTable.freezeRoundTimer then
-		djui_chat_message_create("#ffff50You killed " .. name .. "!\n#ffff50Got a full heal!")
+		djui_chat_message_create("\\#ffff50\\You killed " .. name .. "!\n\\#ffff50\\Got a full heal!")
 		gMarioStates[0].healCounter = 31
 	else
-		djui_chat_message_create("#ffff50You killed " .. name .. "!")
+		djui_chat_message_create("\\#ffff50\\You killed " .. name .. "!")
 	end
 end
 
@@ -2025,7 +2027,7 @@ function on_packet_desync_fix(data, self)
 end
 
 function on_packet_dice_roll(data, self)
-	local text = string.format("#ffff50You rolled %d (needed %d+). ", data.roll, data.chance)
+	local text = string.format("\\#ffff50\\You rolled %d (needed %d+). ", data.roll, data.chance)
 	if data.roll < data.chance then
 		text = text .. "You got unlucky..."
 		djui_chat_message_create(text)
@@ -2082,7 +2084,7 @@ function desync_fix_command(msg)
 		})
 	else
 		djui_chat_message_create(
-			"#ff5050You have permission to perform this command... or DO you?\n(No, you don't have moderator)"
+			"\\#ff5050\\You have permission to perform this command... or DO you?\n(No, you don't have moderator)"
 		)
 		return true
 	end
