@@ -179,14 +179,13 @@ function Mod.render_warning_popups()
 			local prevProgress = prevTimer / p.timeEnter
 			local yPrev = startY + (targetY - startY) * prevProgress
 
-			local r, g, b = 0, 255, 255 -- cyan
-			local baseRectAlpha = 180
+			local r, g, b = 132, 225, 255 -- cyan
+			local baseRectAlpha = 64
 			local baseTextAlpha = 255
 
 			djui_hud_set_color(r, g, b, progress * baseRectAlpha)
 
-			local thickness = 2.0 * s
-			HU.djui_hud_render_rect_rounded_outlined_interpolated(
+			HU.djui_hud_render_rect_rounded_interpolated(
 				x,
 				yPrev,
 				currentBoxWidth,
@@ -195,11 +194,7 @@ function Mod.render_warning_popups()
 				y,
 				currentBoxWidth,
 				currentBoxHeight,
-				0,
-				255,
-				255,
-				thickness,
-				progress * 255
+				16
 			)
 
 			local currYPrev = yPrev + (basePad * 2 * s)
@@ -209,6 +204,7 @@ function Mod.render_warning_popups()
 				local tw = djui_hud_measure_text(clean) * s
 				local tx = x + (currentBoxWidth - tw) / 2
 
+				djui_hud_set_color(255, 255, 255, progress * baseTextAlpha)
 				HU.print_colored_text_interpolated(line, tx, currYPrev, tx, currY, s, progress * baseTextAlpha)
 				currYPrev = currYPrev + (p.rowH * s)
 				currY = currY + (p.rowH * s)

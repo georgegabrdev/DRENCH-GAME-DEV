@@ -62,7 +62,7 @@ function send_packet_to_server(p)
 	elseif network_is_server() then
 		log_to_console("Drench DX: Tried to send packet to the server when we are the server", CONSOLE_MESSAGE_ERROR)
 	else
-		log_to_console("Flood +: Tried to send a invalid packet to the server", CONSOLE_MESSAGE_ERROR)
+		log_to_console("Drench DX: Tried to send a invalid packet to the server", CONSOLE_MESSAGE_ERROR)
 	end
 end
 

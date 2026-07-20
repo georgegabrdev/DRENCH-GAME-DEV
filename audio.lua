@@ -115,7 +115,7 @@ local musicData = {
 	},
 }
 
-local soundData = {
+soundData = {
 	redLight = audio_sample_load("sound-light-red.ogg"),
 	redLightShort = audio_sample_load("sound-light-red-short.ogg"),
 	redLightLong = audio_sample_load("sound-light-red-long.ogg"),
@@ -131,6 +131,8 @@ local soundData = {
 	one = audio_sample_load("sound-one.ogg"),
 	go = audio_sample_load("sound-go.ogg"),
 	select_menu = audio_sample_load("sound-select_menu.ogg"),
+	nuclearbomb = audio_sample_load("sound-nuclearbomb.ogg"),
+	explosion = audio_sample_load("sound-explosion.ogg"),
 }
 
 -- set current streamed music and update volume

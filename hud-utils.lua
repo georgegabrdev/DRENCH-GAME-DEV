@@ -244,6 +244,127 @@ function HU.djui_hud_render_rect_rounded_outlined(x, y, width, height, oR, oG, o
 	djui_hud_set_rotation(0, 0, 0)
 end
 
+function HU.djui_hud_render_rect_rounded_outlined_interpolated(
+	prevX,
+	prevY,
+	prevW,
+	prevH,
+	currX,
+	currY,
+	currW,
+	currH,
+	oR,
+	oG,
+	oB,
+	thickness,
+	opacity
+)
+	if opacity == nil then
+		opacity = 255
+	end
+	local cornerRadius = thickness
+
+	djui_hud_render_rect_interpolated(prevX, prevY, prevW, prevH, currX, currY, currW, currH)
+
+	djui_hud_set_color(oR, oG, oB, opacity)
+
+	djui_hud_render_rect_interpolated(
+		prevX - thickness,
+		prevY,
+		thickness,
+		prevH,
+		currX - thickness,
+		currY,
+		thickness,
+		currH
+	)
+	djui_hud_render_rect_interpolated(
+		prevX + (prevW - thickness) + thickness,
+		prevY,
+		thickness,
+		prevH,
+		currX + (currW - thickness) + thickness,
+		currY,
+		thickness,
+		currH
+	)
+	djui_hud_render_rect_interpolated(
+		prevX,
+		prevY - thickness,
+		prevW,
+		thickness,
+		currX,
+		currY - thickness,
+		currW,
+		thickness
+	)
+	djui_hud_render_rect_interpolated(
+		prevX,
+		prevY + (prevH - thickness) + thickness,
+		prevW,
+		thickness,
+		currX,
+		currY + (currH - thickness) + thickness,
+		currW,
+		thickness
+	)
+
+	local circleDim = (1 / 64) * cornerRadius
+
+	djui_hud_render_texture_interpolated(
+		HU.TEXTURE_ROUND_CORNER,
+		prevX - thickness,
+		prevY - thickness,
+		circleDim,
+		circleDim,
+		currX - thickness,
+		currY - thickness,
+		circleDim,
+		circleDim
+	)
+
+	djui_hud_set_rotation(0x4000, 0, 0)
+	djui_hud_render_texture_interpolated(
+		HU.TEXTURE_ROUND_CORNER,
+		prevX - thickness,
+		prevY + prevH + thickness,
+		circleDim,
+		circleDim,
+		currX - thickness,
+		currY + currH + thickness,
+		circleDim,
+		circleDim
+	)
+
+	djui_hud_set_rotation(-0x4000, 0, 0)
+	djui_hud_render_texture_interpolated(
+		HU.TEXTURE_ROUND_CORNER,
+		prevX + prevW + thickness,
+		prevY - thickness,
+		circleDim,
+		circleDim,
+		currX + currW + thickness,
+		currY - thickness,
+		circleDim,
+		circleDim
+	)
+
+	djui_hud_set_rotation(0x8000, 0, 0)
+	djui_hud_render_texture_interpolated(
+		HU.TEXTURE_ROUND_CORNER,
+		prevX + prevW + thickness,
+		prevY + prevH + thickness,
+		circleDim,
+		circleDim,
+		currX + currW + thickness,
+		currY + currH + thickness,
+		circleDim,
+		circleDim
+	)
+
+	djui_hud_set_rotation(0, 0, 0)
+end
+
 local defaultColorData = {
 	[CT_MARIO] = {
 		tex = get_texture_info("mario_head_recolor"),

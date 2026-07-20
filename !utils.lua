@@ -1083,3 +1083,30 @@ function toggle_modifier_by_bit(bit, forceState)
 		gGlobalSyncTable.activeModifiersBitfield = gGlobalSyncTable.activeModifiersBitfield | bit
 	end
 end
+
+ACT_RAGDOLL = allocate_mario_action(ACT_GROUP_CUTSCENE | ACT_FLAG_STATIONARY | ACT_FLAG_INTANGIBLE)
+
+function act_ragdoll(m)
+	local stepResult = perform_air_step(m, 0)
+
+	if stepResult == AIR_STEP_LANDED then
+		if m.floor.type == SURFACE_BURNING then
+			set_mario_action(m, ACT_LAVA_BOOST, 0)
+		elseif m.health ~= 0xff then
+			set_mario_action(m, ACT_FORWARD_GROUND_KB, 0)
+		elseif m.health == 0xFF then
+			set_mario_action(m, ACT_HARD_FORWARD_GROUND_KB, 0)
+		end
+	end
+	set_character_animation(m, CHAR_ANIM_AIRBORNE_ON_STOMACH)
+	m.marioBodyState.eyeState = MARIO_EYES_DEAD
+	if m.actionArg == 1 then
+		local l = gLakituState
+		l.posHSpeed, l.posVSpeed, l.focHSpeed, l.focVSpeed = 0, 0, 0, 0
+	end
+	vec3s_set(m.angleVel, 2000, 1000, 400)
+	vec3s_add(m.faceAngle, m.angleVel)
+	vec3s_copy(m.marioObj.header.gfx.angle, m.faceAngle)
+end
+
+hook_mario_action(ACT_RAGDOLL, act_ragdoll)
