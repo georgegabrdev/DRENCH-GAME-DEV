@@ -121,12 +121,12 @@ local function on_sync_valid()
 end
 
 local function get_team_tag(playerIndex)
-	local m = gMarioStates[playerIndex]
+	local m = gPlayerSyncTable[playerIndex]
 	if not m or not m.team or not TEAM_DATA[m.team] then
 		return ""
 	end
 
-	return TEAM_DATA[m.team][3] .. " "
+	return TEAM_DATA[m.team][3]:gsub("^(\\#[0-9a-fA-F]+\\)", "%1[") .. "] "
 end
 
 local function get_formatted_tag(playerIndex)

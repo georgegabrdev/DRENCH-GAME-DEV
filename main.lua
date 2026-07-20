@@ -109,7 +109,13 @@ gGlobalSyncTable.mingleHurry = false
 gGlobalSyncTable.mingleMaxDoors = 0
 gGlobalSyncTable.mingleDoorsOpen = 0
 gGlobalSyncTable.duelState = DUEL_STATE_WAIT
-gGlobalSyncTable.rDeadlyNum = 0
+gGlobalSyncTable.murdererDied = false
+gGlobalSyncTable.sheriffDied = false
+gGlobalSyncTable.sheriffDPosX = 0
+gGlobalSyncTable.sheriffDPosY = 0
+gGlobalSyncTable.sheriffDPosZ = 0
+gGlobalSyncTable.rDeadlyNum = math.random(1, 6)
+gGlobalSyncTable.simonSays = math.random(1, 8)
 
 -- dont know if this is used
 gGlobalSyncTable.superSpeed = false
@@ -604,9 +610,9 @@ function mario_update(m)
 	elseif gGlobalSyncTable.gameState == GAME_STATE_LOBBY then
 		if sMario.ready then
 			highlight = true
-			desc = "Ready!"
+			desc = translate("ready_text")
 		else
-			desc = "Waiting..."
+			desc = translate("waiting_text")
 		end
 	elseif gGlobalSyncTable.gameState == GAME_STATE_GAME_END then
 		if gGlobalSyncTable.eliminationMode then
@@ -1110,6 +1116,13 @@ function update()
 		gGlobalSyncTable.starStealOwner = 255
 		gGlobalSyncTable.mingleHurry = false
 		gGlobalSyncTable.duelState = DUEL_STATE_WAIT
+		gGlobalSyncTable.murdererDied = false
+		gGlobalSyncTable.sheriffDied = false
+		gGlobalSyncTable.sheriffDPosX = 0
+		gGlobalSyncTable.sheriffDPosY = 0
+		gGlobalSyncTable.sheriffDPosZ = 0
+		gGlobalSyncTable.rDeadlyNum = math.random(1, 6)
+		gGlobalSyncTable.simonSays = math.random(1, 8)
 		gGlobalSyncTable.gameTimer = gGlobalSyncTable.gameTimer + 1
 		if gGlobalSyncTable.gameTimer >= 450 then
 			gGlobalSyncTable.gameState = GAME_STATE_ACTIVE

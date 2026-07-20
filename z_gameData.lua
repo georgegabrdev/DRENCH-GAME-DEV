@@ -8,7 +8,7 @@ local coinRainInterval = 10 -- spawn every 20 frames
 GAME_MODE_DATA = {
 	[GAME_MODE_GLASS] = {
 		name = "Glass Bridge",
-		desc = "Get across the bridge without falling! Only one glass pane is safe in each row. Will you push your luck, or let someone else take the fall?",
+		desc = translate("desc_glass"),
 		level = LEVEL_GLASS,
 		interact = PLAYER_INTERACTIONS_SOLID,
 		kbStrength = 5,
@@ -59,8 +59,8 @@ GAME_MODE_DATA = {
 	},
 	[GAME_MODE_LIGHTS_OUT] = {
 		name = "Lights Out",
-		desc = "This is a simple game: Stay alive. You'll earn 10 points for surviving this game. You could attack other players for some extra points... but wouldn't that be risky?",
-		descElim = "This is a simple game: Stay alive. There's nothing to hurt you here unless you start attacking each other or something. But why would you do that?",
+		desc = translate("desc_lights_out"),
+		descElim = translate("desc_elim_lights_out"),
 		maxTime = 3 * 60 * 30, -- 3 minutes
 		level = LEVEL_LIGHTS_OUT,
 		interact = PLAYER_INTERACTIONS_PVP,
@@ -116,7 +116,7 @@ GAME_MODE_DATA = {
 	},
 	[GAME_MODE_RED_GREEN_LIGHT] = {
 		name = "Red Light, Green Light",
-		desc = 'Reach the finish line! When Toad shouts "Red Light!", don\'t let him see you moving! You can move behind obstacles to avoid being seen. Tread carefully!',
+		desc = translate("desc_red_green_light"),
 		maxTime = 2 * 60 * 30, -- 2 minutes
 		level = LEVEL_RGLIGHT,
 		music = "", -- no music
@@ -130,7 +130,7 @@ GAME_MODE_DATA = {
 	},
 	[GAME_MODE_MINGLE] = {
 		name = "Mingle",
-		desc = "Stay on the carousel ride! When Waluigi calls a number, enter a room with EXACTLY that many players- no more, no less. Use the switch inside of the room to lock players out. Cooperation is key!",
+		desc = translate("desc_mingle"),
 		level = LEVEL_MINGLE,
 		interact = PLAYER_INTERACTIONS_SOLID,
 		kbStrength = 10,
@@ -314,7 +314,7 @@ GAME_MODE_DATA = {
 	},
 	[GAME_MODE_STAR_STEAL] = {
 		name = "Star Steal",
-		desc = "Get the Star, and hold it to increase your score! Hit a player to take the Star from them! You'll be eliminated if your score is too low. Hmmm, this seems familiar...",
+		desc = translate("desc_star_steal"),
 		level = { LEVEL_TOAD_TOWN, LEVEL_KOOPA_KEEP }, -- selects toad town or koopa keep
 		interact = PLAYER_INTERACTIONS_PVP, -- so invulnerability frames exist
 		firstRoundTime = 90 * 30, -- 1 minute and 30 seconds
@@ -401,7 +401,7 @@ GAME_MODE_DATA = {
 	},
 	[GAME_MODE_BOMB_TAG] = {
 		name = "Bomb Tag",
-		desc = "Don't hold a Bob-Omb! Tag another player to pass your Bob-Omb to them. If you're holding a Bob-Omb when time runs out... you can probably guess what happens.",
+		desc = translate("desc_bomb_tag"),
 		level = { LEVEL_TOAD_TOWN, LEVEL_KOOPA_KEEP }, -- selects toad town or koopa keep
 		interact = PLAYER_INTERACTIONS_PVP, -- so invulnerability frames exist
 		kbStrength = 10,
@@ -532,8 +532,8 @@ GAME_MODE_DATA = {
 	},
 	[GAME_MODE_KOTH] = {
 		name = "King Of The Hill",
-		desc = "Get to the top of the hill! Stand in the circle to increase your score. You'll earn more points if you're alone in the circle. If your score is too low when time runs out, you'll be eliminated! Stand your ground!",
-		descTeams = "Get to the top of the hill! Stand in the circle to increase your score. You'll earn more points if only your team is in the circle. If your score is too low when time runs out, you'll be eliminated! Stand your ground!",
+		desc = translate("desc_koth"),
+		descTeams = translate("desc_team_koth"),
 		level = LEVEL_KOTH,
 		interact = PLAYER_INTERACTIONS_PVP, -- so invulnerability frames exist
 		kbStrength = 25,
@@ -551,10 +551,10 @@ GAME_MODE_DATA = {
 	},
 	[GAME_MODE_DUEL] = {
 		name = "Duel",
-		desc = "Defeat your opponent(s)! Have the most health or be the last one standing to earn a point. Get 2 points to win the minigame! It's time to LOCK IN.",
-		descElim = "Defeat your opponent(s)! Have the most health or be the last one standing to earn a point. Get 2 points to win it ALL. It's time to LOCK IN.",
-		descTeams = "It's team versus team! Have the most health or be the last one standing to earn your team a point. Get 2 points to win the minigame! It's time to LOCK IN.",
-		descTeamsElim = "It's team versus team! Have the most health or be the last one standing to earn your team a point. Get 2 points to win it ALL. It's time to LOCK IN.",
+		desc = translate("desc_duel"),
+		descElim = translate("desc_elim_duel"),
+		descTeams = translate("desc_team_duel"),
+		descTeamsElim = translate("desc_team_elim_duel"),
 		level = LEVEL_DUEL,
 		interact = PLAYER_INTERACTIONS_PVP,
 		maxTime = -1, -- NO max time
@@ -889,8 +889,8 @@ GAME_MODE_DATA = {
 	},
 	[GAME_MODE_DICE] = {
 		name = "Dice Block Battle",
-		desc = "Ready to test your luck? You have a 5% chance to kill a player when you hit them, but each failed roll will increase your odds by 10%! Also, getting hit will increase your odds by 5%. Be the last one standing to win!",
-		descElim = "Ready to test your luck? You have a 5% chance to kill a player when you hit them, but each failed roll will increase your odds by 10%! Also, getting hit will increase your odds by 5%. Who will survive?",
+		desc = translate("desc_dice"),
+		descElim = translate("desc_elim_dice"),
 		level = { LEVEL_TOAD_TOWN, LEVEL_KOOPA_KEEP }, -- selects toad town or koopa keep
 		interact = PLAYER_INTERACTIONS_PVP, -- so invulnerability frames exist
 		kbStrength = 25,
@@ -1003,7 +1003,7 @@ GAME_MODE_DATA = {
 	},
 	[GAME_MODE_COIN_RAIN] = {
 		name = "Coin Rain",
-		desc = "Coins fall from the sky! Collect Yellow Coins for 1 point. Collect Blue Coins for 5 points. Credits to @naoki544 for the idea.",
+		desc = translate("desc_coinrain"),
 
 		level = { LEVEL_TOAD_TOWN, LEVEL_LIGHTS_OUT },
 		-- keeping this
@@ -1057,7 +1057,7 @@ GAME_MODE_DATA = {
 	},
 	[GAME_MODE_DEATH_HIT] = {
 		name = "Death Hit",
-		desc = "Last player standing wins! It's self explanatory. If you get hit, you are ABSOLUTELY cooked. So don't get hit.",
+		desc = translate("desc_death_hit"),
 		level = { LEVEL_TOAD_TOWN, LEVEL_KOOPA_KEEP, LEVEL_LIGHTS_OUT },
 		interact = PLAYER_INTERACTIONS_PVP,
 		kbStrength = 999,
@@ -1091,7 +1091,7 @@ GAME_MODE_DATA = {
 	},
 	[GAME_MODE_BROKEN_LAMP] = {
 		name = "Broken Lamp",
-		desc = "Only 1 player has the lamp. Hit them to steal it. Without it, the darkness drains your health... It's pretty dark. Credit to @RetroGames",
+		desc = translate("desc_broken_lamp"),
 
 		level = { LEVEL_TOAD_TOWN, LEVEL_KOOPA_KEEP, LEVEL_LIGHTS_OUT },
 		interact = PLAYER_INTERACTIONS_PVP,
@@ -1197,7 +1197,7 @@ GAME_MODE_DATA = {
 	},
 	[GAME_MODE_MURDER] = {
 		name = "Murder Mystery",
-		desc = get_translated_desc_murder(),
+		desc = translate("desc_murder"),
 		level = {
 			LEVEL_TOAD_TOWN,
 			LEVEL_KOOPA_KEEP,
@@ -1306,7 +1306,7 @@ GAME_MODE_DATA = {
 			local sMario = gPlayerSyncTable[gMarioStates[0].playerIndex]
 			add_line_to_table(
 				sideBarLines,
-				"" .. translate_role() .. murder_role_calc(sMario.murderIsSheriff, sMario.murderIsMurderer),
+				"" .. translate("role") .. murder_instructions_calc(sMario.murderIsSheriff, sMario.murderIsMurderer),
 				lengthLimit
 			)
 			add_line_to_table(
@@ -1315,10 +1315,10 @@ GAME_MODE_DATA = {
 				lengthLimit
 			)
 			if gGlobalSyncTable.sheriffDied == true then
-				add_line_to_table(sideBarLines, "" .. translate_sheriffdied(), lengthLimit)
+				add_line_to_table(sideBarLines, "" .. translate("sheriffdied"), lengthLimit)
 			end
 			if gGlobalSyncTable.murdererDied == true then
-				add_line_to_table(sideBarLines, "" .. translate_murdererdied(), lengthLimit)
+				add_line_to_table(sideBarLines, "" .. translate("murdererdied"), lengthLimit)
 			end
 			if gPlayerSyncTable[gMarioStates[0].playerIndex].eliminated then
 				add_line_to_table(sideBarLines, "\\#7a7aff\\You died. Good game.", lengthLimit)
@@ -1345,7 +1345,7 @@ GAME_MODE_DATA = {
 	},
 	[GAME_MODE_RUSSIAN_ROULETTE] = {
 		name = "Russian Roulette",
-		desc = get_translated_desc_russian_roulette(),
+		desc = translate("desc_russian_roulette"),
 		level = LEVEL_LIGHTS_OUT,
 		interact = PLAYER_INTERACTIONS_SOLID,
 		kbStrength = 30,
@@ -1370,7 +1370,7 @@ GAME_MODE_DATA = {
 				spawn_orange_number_at_pos(sMario.rSelectedNumber, m.pos.x, m.pos.y + 100, m.pos.z, true)
 			end
 			if gGlobalSyncTable.roundTimer == 149 then
-				djui_popup_create("" .. translate_deadlynumber() .. gGlobalSyncTable.rDeadlyNum, 1)
+				djui_popup_create("" .. translate("deadlynumber") .. gGlobalSyncTable.rDeadlyNum, 1)
 				if sMario.rSelectedNumber == gGlobalSyncTable.rDeadlyNum then
 					eliminate_mario(m)
 				end
@@ -1384,8 +1384,6 @@ GAME_MODE_DATA = {
 		hudRenderFunc = function(screenWidth, screenHeight, sideBarLines, lengthLimit)
 			local sMario = gPlayerSyncTable[gMarioStates[0].playerIndex]
 			local gData = GAME_MODE_DATA[gGlobalSyncTable.gameMode or 0]
-			local roundsLeft = math.max(gData.maxRounds - gGlobalSyncTable.round + 1, 1)
-			add_line_to_table(sideBarLines, "" .. translate_roundsleft() .. roundsLeft, lengthLimit)
 			add_line_to_table(
 				sideBarLines,
 				string.format("\\#7a7aff\\Picked number:\\#dcdcdc\\ %d", sMario.rSelectedNumber),
@@ -1396,7 +1394,7 @@ GAME_MODE_DATA = {
 	},
 	[GAME_MODE_ROPE] = {
 		name = "Tug of War",
-		desc = get_translated_desc_rope(),
+		desc = translate("desc_rope"),
 		level = LEVEL_DUEL,
 		interact = PLAYER_INTERACTIONS_NONE,
 		music = "intense",
@@ -1445,7 +1443,7 @@ GAME_MODE_DATA = {
 	},
 	[GAME_MODE_FIERY] = {
 		name = "Fiery Meteor Falls",
-		desc = get_translated_desc_fiery(),
+		desc = translate("desc_fiery"),
 		level = LEVEL_BOWSER_2,
 		interact = PLAYER_INTERACTIONS_SOLID,
 		kbStrength = 8,
@@ -1453,11 +1451,6 @@ GAME_MODE_DATA = {
 		roundTime = 900,
 		maxRounds = 3,
 		doEliminationPoints = true,
-		hudRenderFunc = function(screenWidth, screenHeight, sideBarLines, lengthLimit)
-			local gData = GAME_MODE_DATA[gGlobalSyncTable.gameMode or 0]
-			local roundsLeft = math.max(gData.maxRounds - gGlobalSyncTable.round + 1, 1)
-			add_line_to_table(sideBarLines, "" .. translate_roundsleft() .. roundsLeft, lengthLimit)
-		end,
 		marioUpdateFunc = function(m)
 			if m.playerIndex ~= 0 then
 				return
@@ -1489,7 +1482,7 @@ GAME_MODE_DATA = {
 	},
 	[GAME_MODE_RUN] = {
 		name = "Coin Run",
-		desc = "placeholder",
+		desc = translate("desc_run"),
 		level = LEVEL_STAIR,
 		music = "thatguy",
 		firstRoundTime = 2100,
@@ -1558,7 +1551,7 @@ GAME_MODE_DATA = {
 	},
 	[GAME_MODE_VIRUS] = {
 		name = "The Virus",
-		desc = "placeholder",
+		desc = translate("desc_virus"),
 		level = {
 			LEVEL_TOAD_TOWN,
 			LEVEL_KOOPA_KEEP,
@@ -1647,7 +1640,7 @@ GAME_MODE_DATA = {
 	},
 	[GAME_MODE_SIMON] = {
 		name = "Simon Says",
-		desc = "Race against your friends to nail every command dropped in chat before time expires. Keep your focus sharp, follow the rules, and grab the most points to get the most points.",
+		desc = translate("desc_simon"),
 		level = LEVEL_KOOPA_KEEP,
 		music = "slider",
 		interact = PLAYER_INTERACTIONS_NONE,
@@ -1694,12 +1687,12 @@ GAME_MODE_DATA = {
 			for var = 1, 35 do
 				if GSC.roundTimer == 6 * var * 30 then
 					play_sound(SOUND_ACTION_CLIMB_UP_TREE, gGlobalSoundSource)
-					djui_chat_message_create("" .. translate_simon_says() .. translate_simon_do())
+					djui_chat_message_create("" .. translate("simon") .. translate("simon"))
 				end
 			end
 			if GSC.round == 1 and GSC.roundTimer == 1 then
-				djui_popup_create("" .. translate_simon_connected(), 1)
-				djui_chat_message_create("" .. translate_simon_says() .. translate_simon_do())
+				djui_popup_create("" .. translate("simon_connected"), 1)
+				djui_chat_message_create("" .. translate("simon") .. translate_simon_do())
 			end
 		end,
 		hostUpdateFunc = function()

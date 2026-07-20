@@ -112,7 +112,10 @@ function on_hud_render()
 		if gGlobalSyncTable.eliminationMode then
 			table.insert(sideBarLines, "\\#ff5050\\Elimination Mode")
 		end
-		table.insert(sideBarLines, "Minigame " .. gGlobalSyncTable.miniGameNum .. "/" .. gGlobalSyncTable.maxMiniGames)
+		table.insert(
+			sideBarLines,
+			translate("minigame_text") .. gGlobalSyncTable.miniGameNum .. "/" .. gGlobalSyncTable.maxMiniGames
+		)
 		table.insert(sideBarLines, "")
 
 		local desc = gData.desc
@@ -1128,7 +1131,7 @@ menu_data = {
 			end,
 		},
 		{
-			"Spectate",
+			translate("spectate_text"),
 			function()
 				local sMario0 = gPlayerSyncTable[0]
 				local skipCheck = gGlobalSyncTable.gameState == GAME_STATE_LOBBY
@@ -1145,7 +1148,7 @@ menu_data = {
 			false,
 		},
 		{
-			"Music",
+			translate("music_text"),
 			function(x)
 				disableMusic = x
 			end,
@@ -1159,7 +1162,7 @@ menu_data = {
 			localSave = true,
 		},
 		{
-			"Colorblind Mode",
+			translate("colorblind_text"),
 			function(x)
 				showColorNames = (x ~= 0)
 			end,
