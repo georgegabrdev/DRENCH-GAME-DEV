@@ -213,10 +213,14 @@ function update_music(music)
 		-- disable music when in character select menu
 		musicVolume = 0
 		newTargetVolume = 0
-	elseif disableMusic == 1 or (disableMusic ~= 0 and music ~= "mingle") then
-		-- disable music based on settings
+	elseif disableMusic == 1 then
 		musicVolume = 0
 		newTargetVolume = 0
+	elseif disableMusic == 2 and music ~= "mingle" then
+		musicVolume = 0
+		newTargetVolume = 0
+	elseif disableMusic == 3 then
+		musicBitrate = 44100
 	elseif is_game_paused() or inMenu then
 		-- lower volume when paused
 		newTargetVolume = targetVolume / 2

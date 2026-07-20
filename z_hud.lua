@@ -769,6 +769,71 @@ function on_hud_render()
 			y = y + 32 * scale
 		end
 	end
+	local modifiers = {}
+
+	if is_modifier_active(modifierBits.superSpeed) then
+		modifiers[#modifiers + 1] = "\\#50ff50\\Super Speed"
+	end
+
+	if is_modifier_active(modifierBits.highGravity) then
+		modifiers[#modifiers + 1] = "\\#ff5050\\High Gravity"
+	end
+
+	if is_modifier_active(modifierBits.lowGravity) then
+		modifiers[#modifiers + 1] = "\\#50a0ff\\Low Gravity"
+	end
+
+	if is_modifier_active(modifierBits.invertedControls) then
+		modifiers[#modifiers + 1] = "\\#ff8080\\Reverse Controls"
+	end
+
+	if is_modifier_active(modifierBits.instaKill) then
+		modifiers[#modifiers + 1] = "\\#ff0000\\Instakill"
+	end
+
+	if #modifiers > 0 then
+		djui_hud_set_font(FONT_NORMAL)
+		local modScale = 0.25
+		local padding = 4
+		local lineHeight = 10
+
+		local title = "\\#ffff50\\MODIFIERS"
+
+		local maxWidth = djui_hud_measure_text(remove_color(title)) * modScale
+
+		for _, text in ipairs(modifiers) do
+			local w = djui_hud_measure_text(remove_color(text)) * modScale
+			if w > maxWidth then
+				maxWidth = w
+			end
+		end
+
+		local boxWidth = maxWidth + padding * 2
+		local boxHeight = (#modifiers + 1) * lineHeight + padding - 12
+
+		local x = screenWidth - boxWidth - 8
+		local y = 8
+
+		-- background
+		djui_hud_set_color(0, 0, 0, 220)
+		HU.djui_hud_render_rect_rounded(x, y, boxWidth, boxHeight, 8)
+
+		-- outline
+		djui_hud_set_color(0, 0, 0, 180)
+		HU.djui_hud_render_rect_rounded_outlined(x, y, boxWidth, boxHeight, 0, 0, 0, 1, 180)
+
+		-- text
+		local textX = x + padding
+		local textY = y + padding - 12
+
+		textY = textY + lineHeight
+
+		for _, text in ipairs(modifiers) do
+			HU.djui_hud_print_colored_text(text, textX, textY, modScale)
+
+			textY = textY + lineHeight
+		end
+	end
 end
 
 hook_event(HOOK_ON_HUD_RENDER, on_hud_render)
@@ -960,6 +1025,13 @@ menu_data = {
 			end,
 		},
 		{
+			"Modifiers",
+			function()
+				enter_menu(7)
+			end,
+			true,
+		},
+		{
 			"Force Start Game",
 			function()
 				gGlobalSyncTable.forceStart = not gGlobalSyncTable.forceStart
@@ -1088,8 +1160,8 @@ menu_data = {
 			runOnChange = true,
 			currNum = 0,
 			minNum = 0,
-			maxNum = 2,
-			nameRef = { "\\#50ff50\\On", "\\#ff5050\\Off", "Mingle Only" },
+			maxNum = 3,
+			nameRef = { "\\#50ff50\\On", "\\#ff5050\\Off", "Mingle Only", "High Quality" },
 			save = "disableMusic",
 			localSave = true,
 		},
@@ -1368,9 +1440,9 @@ menu_data = {
 			end,
 		},
 		{
-			"Test Level",
+			"DS Fort",
 			function()
-				gGlobalSyncTable.gameLevelOverride = LEVEL_TEST
+				gGlobalSyncTable.gameLevelOverride = LEVEL_DS_FORT
 				gGlobalSyncTable.selectedMode = menuSelectedMode
 				local gData = GAME_MODE_DATA[menuSelectedMode or 0]
 				djui_chat_message_create("Selected \\#ffff50\\" .. gData.name)
@@ -1399,6 +1471,68 @@ menu_data = {
 		},
 	},
 	[6] = { buildFunc = build_team_select_menu }, -- auto built
+	[7] = {
+		{
+			"Super Speed",
+			function(x)
+				toggle_modifier_by_bit(modifierBits.superSpeed, x ~= 0)
+			end,
+			false,
+			runOnChange = true,
+			currNum = 0,
+			minNum = 0,
+			maxNum = 1,
+			nameRef = { "\\#ff5050\\Off", "\\#50ff50\\On" },
+		},
+		{
+			"High Gravity",
+			function(x)
+				toggle_modifier_by_bit(modifierBits.highGravity, x ~= 0)
+			end,
+			false,
+			runOnChange = true,
+			currNum = 0,
+			minNum = 0,
+			maxNum = 1,
+			nameRef = { "\\#ff5050\\Off", "\\#50ff50\\On" },
+		},
+		{
+			"Low Gravity",
+			function(x)
+				toggle_modifier_by_bit(modifierBits.lowGravity, x ~= 0)
+			end,
+			false,
+			runOnChange = true,
+			currNum = 0,
+			minNum = 0,
+			maxNum = 1,
+			nameRef = { "\\#ff5050\\Off", "\\#50ff50\\On" },
+		},
+		{
+			"Inverted Controls",
+			function(x)
+				toggle_modifier_by_bit(modifierBits.invertedControls, x ~= 0)
+			end,
+			false,
+			runOnChange = true,
+			currNum = 0,
+			minNum = 0,
+			maxNum = 1,
+			nameRef = { "\\#ff5050\\Off", "\\#50ff50\\On" },
+		},
+		{
+			"Instakill",
+			function(x)
+				toggle_modifier_by_bit(modifierBits.instaKill, x ~= 0)
+			end,
+			false,
+			runOnChange = true,
+			currNum = 0,
+			minNum = 0,
+			maxNum = 1,
+			nameRef = { "\\#ff5050\\Off", "\\#50ff50\\On" },
+		},
+	},
 }
 
 local TEX_DRENCH = get_texture_info("drench_icon")

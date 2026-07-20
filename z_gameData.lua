@@ -13,6 +13,7 @@ GAME_MODE_DATA = {
 		interact = PLAYER_INTERACTIONS_SOLID,
 		kbStrength = 5,
 		music = "dire",
+		fasterActions = true,
 		marioUpdateFunc = function(m) -- switch to custom falling action
 			if
 				m.action & ACT_GROUP_MASK ~= ACT_GROUP_CUTSCENE
@@ -122,6 +123,7 @@ GAME_MODE_DATA = {
 		interact = PLAYER_INTERACTIONS_SOLID,
 		kbStrength = 10,
 		nerfSonic = true,
+		fasterActions = true,
 		victoryFunc = function(m)
 			return (m.floor and m.floor.type == SURFACE_TIMER_END)
 		end,
@@ -322,6 +324,7 @@ GAME_MODE_DATA = {
 		doEliminationPoints = true,
 		mercyRuleScale = 10, -- Max points we can gain in 1 second, used to calculate mercy rule
 		nerfSonic = true,
+		fasterActions = true,
 		marioUpdateFunc = function(m) -- earn points when holding star, and give to nearest opponent on hit
 			local sMario = gPlayerSyncTable[m.playerIndex]
 			local gIndex = network_global_index_from_local(m.playerIndex)
@@ -405,6 +408,7 @@ GAME_MODE_DATA = {
 		roundTime = 30 * 30, -- 30 seconds
 		maxRounds = 6,
 		nerfSonic = true,
+		fasterActions = true,
 		marioUpdateFunc = function(m)
 			local sMario = gPlayerSyncTable[m.playerIndex]
 			m.health = 0x880
@@ -538,6 +542,7 @@ GAME_MODE_DATA = {
 		maxRounds = 5,
 		autoElimination = true,
 		doEliminationPoints = true,
+		fasterActions = true,
 		mercyRuleScale = 20, -- Max points we can gain in 1 second, used to calculate mercy rule
 		marioUpdateFunc = function(m) -- full health, and that's it
 			m.health = 0x880
@@ -1011,6 +1016,7 @@ GAME_MODE_DATA = {
 		autoElimination = true,
 		doEliminationPoints = true,
 		removeDecimal = true,
+		fasterActions = true,
 
 		hostUpdateFunc = function()
 			coinRainSpawnTimer = coinRainSpawnTimer + 1
@@ -1093,6 +1099,7 @@ GAME_MODE_DATA = {
 		music = "dark",
 		maxTime = 2 * 60 * 30,
 		showHealth = true,
+		fasterActions = true,
 
 		hostUpdateFunc = function()
 			if gGlobalSyncTable.gameTimer == 1 then
@@ -1188,75 +1195,519 @@ GAME_MODE_DATA = {
 			return "Dark", false
 		end,
 	},
-	[GAME_MODE_MEMORY_BRIDGE] = {
-		name = "Memory Bridge",
-		desc = "Remember the order of the glass panes! You can only see the correct answers a bit ahead. Do you trust your memory, or will you let someone else take the fall? (Note: Points are halved)",
-		level = LEVEL_GLASS_ALT,
-		interact = PLAYER_INTERACTIONS_NONE,
-		kbStrength = 5,
-		music = "stealth", -- Defined above in on_mods_loaded
-		marioUpdateFunc = function(m) -- switch to custom falling action
-			if
-				m.action & ACT_GROUP_MASK ~= ACT_GROUP_CUTSCENE
-				and m.action ~= ACT_GB_FALL
-				and m.action ~= ACT_SPECTATE
-				and m.floor
-				and m.floor.type == SURFACE_DEATH_PLANE
-				and m.vel.y <= -75
-				and m.pos.y - m.floorHeight <= 8000
-			then
-				set_mario_action(m, ACT_GB_FALL, 0)
+	[GAME_MODE_MURDER] = {
+		name = "Murder Mystery",
+		desc = get_translated_desc_murder(),
+		level = {
+			LEVEL_TOAD_TOWN,
+			LEVEL_KOOPA_KEEP,
+			LEVEL_LIGHTS_OUT,
+			LEVEL_DS_FORT,
+		},
+		interact = PLAYER_INTERACTIONS_PVP,
+		kbStrength = 1,
+		music = "dark",
+		roundTime = 900,
+		maxRounds = 3,
+		doEliminationPoints = true,
+		marioUpdateFunc = function(m)
+			m.health = 2176
+			sonic_set_full_rings(m.playerIndex)
+			if m.action == ACT_LAVA_BOOST then
+				set_to_spawn_pos(m, true)
 			end
-
-			-- Extra function to show the correct panes
-			if m.playerIndex == 0 and m.action ~= ACT_SPECTATE then
-				local score = gPlayerSyncTable[0].roundScore or 0
-				local o = obj_get_first_with_behavior_id(id_bhvGlass)
-				while o do
-					if
-						o.oBobombFuseTimer == 1
-						and (o.oBehParams2ndByte < 4 or o.oBehParams2ndByte < score or o.oBehParams2ndByte - score == 3)
-					then
-						generate_yellow_sparkles(o.oPosX, o.oPosY, o.oPosZ, 150)
-					end
-					o = obj_get_next_with_same_behavior_id(o)
-				end
+			if gGlobalSyncTable.roundTimer == 1 and gGlobalSyncTable.round == 1 then
+				m.invincTimer = 300
+			end
+			if gPlayerSyncTable[m.playerIndex].murderIsSheriff == true then
+				m.marioBodyState.modelState = m.marioBodyState.modelState | MODEL_STATE_METAL
 			end
 		end,
-		victoryFunc = function(m)
-			if m.action & ACT_FLAG_AIR == 0 and m.floor and m.floor.type == SURFACE_TIMER_END then
-				if gPlayerSyncTable[m.playerIndex].roundScore >= 10 then
-					return true
-				elseif m.playerIndex == 0 then
-					play_sound(SOUND_MENU_CAMERA_BUZZ, gGlobalSoundSource)
-					djui_chat_message_create("\\#ff5050\\You aren't allowed to skip any glass panes!")
-					set_to_spawn_pos(m, true)
+		hostUpdateFunc = function()
+			if gGlobalSyncTable.murdererDied == true then
+				local gData = GAME_MODE_DATA[gGlobalSyncTable.gameMode or 0]
+				if gGlobalSyncTable.gameTimer < gData.roundTime * gData.maxRounds - 60 then
+					gGlobalSyncTable.gameTimer = gGlobalSyncTable.gameTimer + 15
 				end
 			end
-			return false
-		end,
-		startingSetup = function()
-			-- spawn thwomps for all players
-			for i = 0, MAX_PLAYERS - 1 do
-				local m = gMarioStates[i]
-				spawn_object_no_rotate(id_bhvGBThwomp, E_MODEL_THWOMP, m.pos.x, m.pos.y + 1000, m.pos.z, function(o)
-					o.oBehParams = i
-				end, false)
+			if gGlobalSyncTable.roundTimer ~= 1 then
+				return
 			end
+			if gGlobalSyncTable.round ~= 1 then
+				return
+			end
+			local aliveTable = {}
+			for_each_connected_player(function(i)
+				local sMario = gPlayerSyncTable[i]
+				if not sMario.eliminated then
+					sMario.murderIsMurderer = false
+					sMario.murderIsSheriff = false
+					table.insert(aliveTable, i)
+				end
+			end)
+			local murdererToAssign = 1
+			local sheriffToAssign = 1
+			for i = #aliveTable, 2, -1 do
+				local j = math.random(i)
+				aliveTable[i], aliveTable[j] = aliveTable[j], aliveTable[i]
+			end
+			while murdererToAssign ~= 0 and #aliveTable ~= 0 do
+				local index = aliveTable[1]
+				gPlayerSyncTable[index].murderIsMurderer = true
+				table.remove(aliveTable, 1)
+				murdererToAssign = 0
+			end
+			while sheriffToAssign ~= 0 and murdererToAssign == 0 and #aliveTable ~= 0 do
+				local index = aliveTable[1]
+				gPlayerSyncTable[index].murderIsSheriff = true
+				table.remove(aliveTable, 1)
+				sheriffToAssign = 0
+			end
+			spawn_sync_object(id_bhvSheriffSuit, E_MODEL_HEART, 0, 250, 0, nil)
 		end,
 		allowPvpFunc = function(attacker, victim, interaction)
 			local sAttacker = gPlayerSyncTable[attacker.playerIndex]
 			local sVictim = gPlayerSyncTable[victim.playerIndex]
-
-			if sAttacker.roundScore == 0 or sVictim.roundScore == 0 then
+			if sAttacker.murderIsSheriff == false and sAttacker.murderIsMurderer == false then
 				return false
+			elseif
+				sAttacker.murderIsSheriff == true
+				and sVictim.murderIsSheriff == false
+				and sVictim.murderIsMurderer == false
+			then
+				eliminate_mario(attacker)
+				gGlobalSyncTable.sheriffDied = true
+				gGlobalSyncTable.sheriffDPosX = attacker.pos.x
+				gGlobalSyncTable.sheriffDPosY = attacker.pos.y
+				gGlobalSyncTable.sheriffDPosZ = attacker.pos.z
+				sAttacker.earnedPoints = 0
+				return false
+			elseif sAttacker.murderIsSheriff == true and sVictim.murderIsMurderer == true then
+				gGlobalSyncTable.murdererDied = true
+				eliminate_mario(victim)
+			elseif
+				sAttacker.murderIsMurderer == true
+				and sVictim.murderIsMurderer == false
+				and sVictim.murderIsSheriff == false
+			then
+				eliminate_mario(victim)
+			elseif sAttacker.murderIsMurderer == true and sVictim.murderIsSheriff == true then
+				eliminate_mario(victim)
+				gGlobalSyncTable.sheriffDied = true
+				gGlobalSyncTable.sheriffDPosX = victim.pos.x
+				gGlobalSyncTable.sheriffDPosY = victim.pos.y
+				gGlobalSyncTable.sheriffDPosZ = victim.pos.z
 			end
 		end,
-		pointCalcFunc = function(index) -- half points to make things fair
-			return gPlayerSyncTable[index].earnedPoints // 2
+		hudRenderFunc = function(screenWidth, screenHeight, sideBarLines, lengthLimit)
+			local gData = GAME_MODE_DATA[gGlobalSyncTable.gameMode or 0]
+			local roundsLeft = math.max(gData.maxRounds - gGlobalSyncTable.round + 1, 1)
+			add_line_to_table(sideBarLines, "" .. translate_roundsleft() .. roundsLeft, lengthLimit)
+			local sMario = gPlayerSyncTable[gMarioStates[0].playerIndex]
+			add_line_to_table(
+				sideBarLines,
+				"" .. translate_role() .. murder_role_calc(sMario.murderIsSheriff, sMario.murderIsMurderer),
+				lengthLimit
+			)
+			add_line_to_table(
+				sideBarLines,
+				"" .. murder_instructions_calc(sMario.murderIsSheriff, sMario.murderIsMurderer),
+				lengthLimit
+			)
+			if gGlobalSyncTable.sheriffDied == true then
+				add_line_to_table(sideBarLines, "" .. translate_sheriffdied(), lengthLimit)
+			end
+			if gGlobalSyncTable.murdererDied == true then
+				add_line_to_table(sideBarLines, "" .. translate_murdererdied(), lengthLimit)
+			end
+			if gPlayerSyncTable[gMarioStates[0].playerIndex].eliminated then
+				add_line_to_table(sideBarLines, "\\#7a7aff\\You died. Good game.", lengthLimit)
+			end
 		end,
-		losePointCalcFunc = function(index) -- half points to make things fair
-			return gPlayerSyncTable[index].earnedPoints // 2
+		nametagFunc = function(index)
+			if index ~= 0 and gMarioStates[0].action ~= ACT_SPECTATE then
+				return ""
+			end
+		end,
+		descFunc = function(index)
+			if gGlobalSyncTable.gameState ~= GAME_STATE_ACTIVE then
+				return
+			end
+			local sMario = gPlayerSyncTable[index]
+			if sMario.eliminated then
+				return
+			end
+			if not sMario.murderIsSheriff then
+				return
+			end
+			return "Sheriff", false, true
+		end,
+	},
+	[GAME_MODE_RUSSIAN_ROULETTE] = {
+		name = "Russian Roulette",
+		desc = get_translated_desc_russian_roulette(),
+		level = LEVEL_LIGHTS_OUT,
+		interact = PLAYER_INTERACTIONS_SOLID,
+		kbStrength = 30,
+		music = "slider",
+		roundTime = 150,
+		maxRounds = 15,
+		doEliminationPoints = true,
+		marioUpdateFunc = function(m)
+			if m.playerIndex ~= 0 then
+				return
+			end
+			local sMario = gPlayerSyncTable[m.playerIndex]
+			m.health = 2176
+			sonic_set_full_rings(m.playerIndex)
+			if m.controller.buttonPressed == m.controller.buttonPressed | L_TRIG then
+				if sMario.rSelectedNumber == 6 then
+					sMario.rSelectedNumber = 1
+				elseif sMario.rSelectedNumber < 6 then
+					sMario.rSelectedNumber = sMario.rSelectedNumber + 1
+				end
+				play_sound_rbutton_changed()
+				spawn_orange_number_at_pos(sMario.rSelectedNumber, m.pos.x, m.pos.y + 100, m.pos.z, true)
+			end
+			if gGlobalSyncTable.roundTimer == 149 then
+				djui_popup_create("" .. translate_deadlynumber() .. gGlobalSyncTable.rDeadlyNum, 1)
+				if sMario.rSelectedNumber == gGlobalSyncTable.rDeadlyNum then
+					eliminate_mario(m)
+				end
+			end
+		end,
+		hostUpdateFunc = function()
+			if gGlobalSyncTable.roundTimer == 150 then
+				gGlobalSyncTable.rDeadlyNum = math.random(1, 6)
+			end
+		end,
+		hudRenderFunc = function(screenWidth, screenHeight, sideBarLines, lengthLimit)
+			local sMario = gPlayerSyncTable[gMarioStates[0].playerIndex]
+			local gData = GAME_MODE_DATA[gGlobalSyncTable.gameMode or 0]
+			local roundsLeft = math.max(gData.maxRounds - gGlobalSyncTable.round + 1, 1)
+			add_line_to_table(sideBarLines, "" .. translate_roundsleft() .. roundsLeft, lengthLimit)
+			add_line_to_table(
+				sideBarLines,
+				string.format("\\#7a7aff\\Picked number:\\#dcdcdc\\ %d", sMario.rSelectedNumber),
+				lengthLimit
+			)
+			add_line_to_table(sideBarLines, "Change with L button", lengthLimit)
+		end,
+	},
+	[GAME_MODE_ROPE] = {
+		name = "Tug of War",
+		desc = get_translated_desc_rope(),
+		level = LEVEL_DUEL,
+		interact = PLAYER_INTERACTIONS_NONE,
+		music = "intense",
+		firstRoundTime = 600,
+		roundTime = 450,
+		maxRounds = 5,
+		autoElimination = true,
+		doEliminationPoints = true,
+		beforeMarioFunc = function(m)
+			local centerY = 80
+			for var = 1, 60 do
+				if gGlobalSyncTable.roundTimer == 1 * var * 10 then
+					spawn_sync_object(id_bhvSparkle, E_MODEL_SPARKLES, m.pos.x * 0.9, centerY, m.pos.z * 0.9, nil)
+					spawn_sync_object(id_bhvSparkle, E_MODEL_SPARKLES, m.pos.x * 0.25, centerY, m.pos.z * 0.25, nil)
+					spawn_sync_object(id_bhvSparkle, E_MODEL_SPARKLES, m.pos.x * 0.5, centerY, m.pos.z * 0.5, nil)
+					spawn_sync_object(id_bhvSparkle, E_MODEL_SPARKLES, m.pos.x * 0.75, centerY, m.pos.z * 0.75, nil)
+					spawn_non_sync_object(id_bhvSparkle, E_MODEL_SPARKLES, 0, centerY, 0, nil)
+				end
+			end
+			if m.playerIndex ~= 0 then
+				return
+			end
+			m.action = ACT_HOLDING_BOWSER
+			m.controller.buttonPressed = m.controller.buttonPressed & ~B_BUTTON
+			m.controller.buttonDown = m.controller.buttonDown & ~B_BUTTON
+			m.controller.buttonReleased = m.controller.buttonReleased & ~B_BUTTON
+			m.controller.stickX = 0
+			m.controller.stickY = 0
+			m.controller.rawStickX = 0
+			m.controller.rawStickY = 0
+			m.controller.extStickX = 0
+			m.controller.extStickY = 0
+			local sMario = gPlayerSyncTable[m.playerIndex]
+			if
+				m.controller.buttonPressed == m.controller.buttonPressed | A_BUTTON
+				or m.controller.buttonPressed == m.controller.buttonPressed | Z_TRIG
+			then
+				sMario.roundScore = sMario.roundScore + 1
+				play_sound(SOUND_ACTION_CLIMB_UP_TREE, gGlobalSoundSource)
+			end
+		end,
+		onPhysicalStepFunc = function(m)
+			m.vel.x = 0
+			m.vel.z = 0
+		end,
+	},
+	[GAME_MODE_FIERY] = {
+		name = "Fiery Meteor Falls",
+		desc = get_translated_desc_fiery(),
+		level = LEVEL_BOWSER_2,
+		interact = PLAYER_INTERACTIONS_SOLID,
+		kbStrength = 8,
+		music = "slider",
+		roundTime = 900,
+		maxRounds = 3,
+		doEliminationPoints = true,
+		hudRenderFunc = function(screenWidth, screenHeight, sideBarLines, lengthLimit)
+			local gData = GAME_MODE_DATA[gGlobalSyncTable.gameMode or 0]
+			local roundsLeft = math.max(gData.maxRounds - gGlobalSyncTable.round + 1, 1)
+			add_line_to_table(sideBarLines, "" .. translate_roundsleft() .. roundsLeft, lengthLimit)
+		end,
+		marioUpdateFunc = function(m)
+			if m.playerIndex ~= 0 then
+				return
+			end
+			if m.action == ACT_LAVA_BOOST then
+				set_to_spawn_pos(m, true)
+				m.health = m.health - 512
+			end
+			for var = 1, 30 do
+				local x, y, z = m.pos.x + math.random(-500, 500), 3000, m.pos.z + math.random(-500, 500)
+				local x2, z2 = m.pos.x + math.random(-500, 500), m.pos.z + math.random(-500, 500)
+				local x3, z3 = math.random(-500, 500), math.random(-500, 500)
+				local x4, z4 = math.random(-500, 500), math.random(-500, 500)
+				if gGlobalSyncTable.roundTimer == 1 * var * 30 + 15 then
+					spawn_non_sync_object(id_bhvBouncingFireball, E_MODEL_NONE, x, y, z, function(o)
+						o.oMoveAngleYaw = math.random(0, 65535)
+					end)
+					spawn_non_sync_object(id_bhvBouncingFireball, E_MODEL_NONE, x2, y, z2, function(o)
+						o.oMoveAngleYaw = math.random(0, 65535)
+					end)
+					spawn_non_sync_object(id_bhvFlameFloatingLanding, E_MODEL_RED_FLAME, x, y, z, nil)
+					spawn_non_sync_object(id_bhvFlameFloatingLanding, E_MODEL_RED_FLAME, x2, y, z2, nil)
+				elseif gGlobalSyncTable.roundTimer == 10 * var * 30 - 1 then
+					spawn_non_sync_object(id_bhvFlame, E_MODEL_BLUE_FLAME, x3, 1350, z3, nil)
+					spawn_non_sync_object(id_bhvFlame, E_MODEL_BLUE_FLAME, x4, 1350, z4, nil)
+				end
+			end
+		end,
+	},
+	[GAME_MODE_RUN] = {
+		name = "Coin Run",
+		desc = "placeholder",
+		level = LEVEL_STAIR,
+		music = "thatguy",
+		firstRoundTime = 2100,
+		roundTime = 750,
+		maxRounds = 5,
+		kbStrength = 40,
+		doEliminationPoints = true,
+		autoElimination = true,
+		interact = PLAYER_INTERACTIONS_SOLID,
+		marioUpdateFunc = function(m)
+			if m.playerIndex ~= 0 then
+				return
+			end
+			m.health = 2176
+			if m.pos.y < -3000 or 0 < m.hurtCounter then
+				set_to_spawn_pos(m, true)
+				play_sound_button_change_blocked()
+				m.squishTimer = 0
+				m.invincTimer = 90
+				m.hurtCounter = 0
+			end
+			if gGlobalSyncTable.roundTimer ~= 1 then
+				return
+			end
+			if gGlobalSyncTable.round ~= 1 then
+				return
+			end
+			m.invincTimer = 150
+		end,
+		hostUpdateFunc = function()
+			for var = 1, 70 do
+				if gGlobalSyncTable.roundTimer == 5 * var * 30 - 1 then
+					spawn_sync_object(id_bhvTenCoinsSpawn, E_MODEL_NONE, 0, 2000, -7100, nil)
+				end
+			end
+			if gGlobalSyncTable.roundTimer ~= 1 then
+				return
+			end
+			if gGlobalSyncTable.round ~= 1 then
+				return
+			end
+			local x, y = 0, -8000
+			spawn_sync_object(id_bhvTiltingBowserLavaPlatform, E_MODEL_NONE, x, y, 14884, nil)
+			spawn_sync_object(id_bhvTiltingBowserLavaPlatform, E_MODEL_NONE, x, y, 11738, nil)
+			spawn_sync_object(id_bhvTiltingBowserLavaPlatform, E_MODEL_NONE, x, y, 8594, nil)
+			spawn_sync_object(id_bhvTiltingBowserLavaPlatform, E_MODEL_NONE, x, y, 5436, nil)
+			spawn_sync_object(id_bhvTiltingBowserLavaPlatform, E_MODEL_NONE, x, y, 2292, nil)
+			spawn_sync_object(id_bhvTiltingBowserLavaPlatform, E_MODEL_NONE, x, y, -1068, nil)
+			spawn_sync_object(id_bhvTiltingBowserLavaPlatform, E_MODEL_NONE, x, y, -3900, nil)
+			spawn_sync_object(id_bhvTiltingBowserLavaPlatform, E_MODEL_NONE, x, y, -7189, nil)
+		end,
+		onInteractFunc = function(m, o, t, v)
+			local sMario = gPlayerSyncTable[m.playerIndex]
+			if o.oInteractType == INTERACT_COIN then
+				sMario.roundScore = sMario.roundScore + 1
+				spawn_sync_object(
+					id_bhvFallingBomb,
+					E_MODEL_BLACK_BOBOMB,
+					math.random(-1242, 1122),
+					1200,
+					math.random(-4270, 11040),
+					nil
+				)
+			end
+		end,
+	},
+	[GAME_MODE_VIRUS] = {
+		name = "The Virus",
+		desc = "placeholder",
+		level = {
+			LEVEL_TOAD_TOWN,
+			LEVEL_KOOPA_KEEP,
+			LEVEL_LIGHTS_OUT,
+			LEVEL_DS_FORT,
+		},
+		music = "slider",
+		interact = PLAYER_INTERACTIONS_PVP,
+		firstRoundTime = 1500,
+		roundTime = 900,
+		maxRounds = 3,
+		kbStrength = 20,
+		fasterActions = true,
+		doEliminationPoints = true,
+		hostUpdateFunc = function()
+			if gGlobalSyncTable.roundTimer ~= 1 then
+				return
+			end
+			local aliveTable = {}
+			for_each_connected_player(function(i)
+				local sMario = gPlayerSyncTable[i]
+				if not sMario.eliminated then
+					sMario.virus = false
+					table.insert(aliveTable, i)
+				end
+			end)
+			local virusToAssign = 1
+			for i = #aliveTable, 2, -1 do
+				local j = math.random(i)
+				aliveTable[i], aliveTable[j] = aliveTable[j], aliveTable[i]
+			end
+			while virusToAssign ~= 0 and #aliveTable ~= 0 do
+				local index = aliveTable[1]
+				gPlayerSyncTable[index].virus = true
+				table.remove(aliveTable, 1)
+				virusToAssign = 0
+			end
+		end,
+		marioUpdateFunc = function(m)
+			if gPlayerSyncTable[m.playerIndex].virus == true then
+				m.health = m.health - 2
+				m.marioBodyState.modelState = m.marioBodyState.modelState | MODEL_STATE_METAL
+			end
+			if gGlobalSyncTable.roundTimer == 1 and gGlobalSyncTable.round == 1 then
+				m.invincTimer = 150
+			end
+			if m.playerIndex ~= 0 then
+				return
+			end
+			if m.action == ACT_LAVA_BOOST then
+				set_to_spawn_pos(m, true)
+				m.hurtCounter = 4
+				m.invincTimer = 90
+			end
+		end,
+		onPvpFunc = function(attacker, victim, interaction)
+			local sAttacker = gPlayerSyncTable[attacker.playerIndex]
+			local sVictim = gPlayerSyncTable[victim.playerIndex]
+			if sAttacker.virus == true then
+				sVictim.virus = true
+				sAttacker.virus = false
+				victim.invincTimer = 120
+			end
+		end,
+		hudRenderFunc = function(screenWidth, screenHeight, sideBarLines, lengthLimit)
+			local gData = GAME_MODE_DATA[gGlobalSyncTable.gameMode or 0]
+			local roundsLeft = math.max(gData.maxRounds - gGlobalSyncTable.round + 1, 1)
+			add_line_to_table(sideBarLines, "" .. translate_roundsleft() .. roundsLeft, lengthLimit)
+			if gPlayerSyncTable[gMarioStates[0].playerIndex].virus == true then
+				add_line_to_table(sideBarLines, "" .. translate_you_are_infected(), lengthLimit)
+			end
+		end,
+		descFunc = function(index)
+			if gGlobalSyncTable.gameState ~= GAME_STATE_ACTIVE then
+				return
+			end
+			local sMario = gPlayerSyncTable[index]
+			if sMario.eliminated then
+				return
+			end
+			if not sMario.virus then
+				return
+			end
+			return "Infected", false, true
+		end,
+	},
+	[GAME_MODE_SIMON] = {
+		name = "Simon Says",
+		desc = "Race against your friends to nail every command dropped in chat before time expires. Keep your focus sharp, follow the rules, and grab the most points to get the most points.",
+		level = LEVEL_KOOPA_KEEP,
+		music = "slider",
+		interact = PLAYER_INTERACTIONS_NONE,
+		firstRoundTime = 1350,
+		roundTime = 900,
+		maxRounds = 5,
+		doEliminationPoints = true,
+		autoElimination = true,
+		fasterActions = true,
+		marioUpdateFunc = function(m)
+			if m.playerIndex ~= 0 then
+				return
+			end
+			m.health = 2176
+			m.hurtCounter = 0
+			sonic_set_full_rings(m.playerIndex)
+			local sMario = gPlayerSyncTable[m.playerIndex]
+			local GSC = gGlobalSyncTable
+			if GSC.simonSays == 1 and m.pos.y > m.floorHeight then
+				sMario.roundScore = sMario.roundScore + 1
+				play_sound(SOUND_GENERAL_COIN, gGlobalSoundSource)
+			elseif GSC.simonSays == 2 and m.action == m.action | ACT_FLAG_ATTACKING then
+				sMario.roundScore = sMario.roundScore + 1
+				play_sound(SOUND_GENERAL_COIN, gGlobalSoundSource)
+			elseif GSC.simonSays == 3 and m.action == ACT_IDLE then
+				sMario.roundScore = sMario.roundScore + 1
+				play_sound(SOUND_GENERAL_COIN, gGlobalSoundSource)
+			elseif GSC.simonSays == 4 and m.action == ACT_WALKING then
+				sMario.roundScore = sMario.roundScore + 1
+				play_sound(SOUND_GENERAL_COIN, gGlobalSoundSource)
+			elseif GSC.simonSays == 5 and m.action == ACT_LAVA_BOOST then
+				sMario.roundScore = sMario.roundScore + 1
+				play_sound(SOUND_GENERAL_COIN, gGlobalSoundSource)
+			elseif GSC.simonSays == 6 and m.action == ACT_LEDGE_GRAB then
+				sMario.roundScore = sMario.roundScore + 1
+				play_sound(SOUND_GENERAL_COIN, gGlobalSoundSource)
+			elseif GSC.simonSays == 7 and m.forwardVel > 35 then
+				sMario.roundScore = sMario.roundScore + 1
+				play_sound(SOUND_GENERAL_COIN, gGlobalSoundSource)
+			elseif GSC.simonSays == 8 and m.action == ACT_BACKFLIP then
+				sMario.roundScore = sMario.roundScore + 1
+				play_sound(SOUND_GENERAL_COIN, gGlobalSoundSource)
+			end
+			for var = 1, 35 do
+				if GSC.roundTimer == 6 * var * 30 then
+					play_sound(SOUND_ACTION_CLIMB_UP_TREE, gGlobalSoundSource)
+					djui_chat_message_create("" .. translate_simon_says() .. translate_simon_do())
+				end
+			end
+			if GSC.round == 1 and GSC.roundTimer == 1 then
+				djui_popup_create("" .. translate_simon_connected(), 1)
+				djui_chat_message_create("" .. translate_simon_says() .. translate_simon_do())
+			end
+		end,
+		hostUpdateFunc = function()
+			for var = 1, 35 do
+				if gGlobalSyncTable.roundTimer == 6 * var * 30 - 5 then
+					gGlobalSyncTable.simonSays = math.random(1, 8)
+				end
+			end
 		end,
 	},
 }
@@ -1312,50 +1763,126 @@ LEVEL_SYNC_SETUP = {
 
 LEVEL_SPAWN_DATA = {
 	[LEVEL_LOBBY] = {
-		spawnPos = { x = 0, y = 1000, z = 0 },
-		spawnAngle = 0x8000,
+		spawnPos = {
+			x = 0,
+			y = 1000,
+			z = 0,
+		},
+		spawnAngle = 32768,
 		spawnLine = true,
 	},
 	[LEVEL_GLASS] = {
-		spawnPos = { x = 0, y = 1000, z = -8000 },
+		spawnPos = {
+			x = 0,
+			y = 1000,
+			z = -8000,
+		},
 	},
 	[LEVEL_LIGHTS_OUT] = {
-		spawnPos = { x = 0, y = 1000, z = 0 },
+		spawnPos = {
+			x = 0,
+			y = 1000,
+			z = 0,
+		},
 		spawnDist = 1000,
-		spawnAngle = 0x8000,
+		spawnAngle = 32768,
 	},
 	[LEVEL_RGLIGHT] = {
-		spawnPos = { x = 0, y = 1000, z = 0 },
-		spawnAngle = 0x8000,
+		spawnPos = {
+			x = 0,
+			y = 1000,
+			z = 0,
+		},
+		spawnAngle = 32768,
 		spawnLine = true,
 	},
 	[LEVEL_KOTH] = {
-		spawnPos = { x = -2400, y = 1000, z = 1486 },
+		spawnPos = {
+			x = -2400,
+			y = 1000,
+			z = 1486,
+		},
 		spawnAngle = 17698,
 	},
 	[LEVEL_MINGLE] = {
-		spawnPos = { x = 0, y = 500, z = 0 },
+		spawnPos = {
+			x = 0,
+			y = 500,
+			z = 0,
+		},
 		spawnDist = 750,
 	},
 	[LEVEL_DUEL] = {
-		spawnPos = { x = 0, y = 500, z = 0 },
+		spawnPos = {
+			x = 0,
+			y = 500,
+			z = 0,
+		},
 		spawnDist = 2000,
 	},
 	[LEVEL_TOAD_TOWN] = {
-		spawnPos = { x = 0, y = 500, z = 0 },
+		spawnPos = {
+			x = 0,
+			y = 500,
+			z = 0,
+		},
 		spawnDist = 1100,
 	},
 	[LEVEL_KOOPA_KEEP] = {
-		spawnPos = { x = 1210, y = -737, z = -2088 },
+		spawnPos = {
+			x = 1210,
+			y = -737,
+			z = -2088,
+		},
 		spawnDist = 400,
 	},
-	[LEVEL_GLASS_ALT] = {
-		spawnPos = { x = 0, y = 1000, z = -8000 },
+	[LEVEL_DS_FORT] = {
+		spawnPos = {
+			x = 2345,
+			y = 0,
+			z = 1100,
+		},
 		spawnDist = 400,
 	},
-	[LEVEL_TEST] = {
-		spawnPos = { x = -490, y = 29, z = -433 },
+	[LEVEL_STAIR] = {
+		spawnPos = {
+			x = 0,
+			y = -2000,
+			z = 13400,
+		},
 		spawnDist = 400,
+	},
+	[LEVEL_BOWSER_1] = {
+		spawnPos = {
+			x = 0,
+			y = 2000,
+			z = 0,
+		},
+		spawnDist = 2500,
+	},
+	[LEVEL_BOWSER_2] = {
+		spawnPos = {
+			x = 0,
+			y = 2000,
+			z = 0,
+		},
+		spawnDist = 2500,
+	},
+	[LEVEL_BOWSER_3] = {
+		spawnPos = {
+			x = 0,
+			y = 2000,
+			z = 0,
+		},
+		spawnDist = 2500,
+	},
+	[LEVEL_SA] = {
+		spawnPos = {
+			x = 0,
+			y = -4000,
+			z = 0,
+		},
+		spawnDist = 2000,
 	},
 }
 

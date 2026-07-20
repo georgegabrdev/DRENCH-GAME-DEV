@@ -1,13 +1,8 @@
--- name: \\#00ffff\\Drench Game Deluxe v1.2.5 [WIP]
+-- name: \\#00ffff\\Drench Game Deluxe v1.2.6 [WIP]
 -- description: Squid Game in Mario 64!\n\nCommissioned by Drenchy\nInspired by Dani's \"Crab Game\"\n\nProgramming: EmilyEmmi\n\nMaps: biobak, EmilyEmmi, Woissil\n\nSoundtrack: murioz, Awesome Seal Guy (YT)\n\nVoice Acting:\nEspi as Toad\nSqueex as Mingle Callout\nTrashcam as Waluigi\n\nAds: Squeex's Community\n\nSpecial Thanks: Squishy
 -- category: gamemode
 -- incompatible: gamemode
 -- pausable: false
-
-if unsupported then
-	return
-end
-
 gServerSettings.bubbleDeath = 0
 gLevelValues.fixCollisionBugs = 1 -- fixes invis walls on map
 
@@ -29,9 +24,15 @@ GAME_MODE_DICE = 7
 GAME_MODE_COIN_RAIN = 8
 GAME_MODE_DEATH_HIT = 9
 GAME_MODE_BROKEN_LAMP = 10
-GAME_MODE_MEMORY_BRIDGE = 11
-GAME_MODE_DUEL = 12 -- needs to be at the end due to its special nature
-GAME_MODE_MAX = 13
+GAME_MODE_MURDER = 11
+GAME_MODE_RUSSIAN_ROULETTE = 12
+GAME_MODE_ROPE = 13
+GAME_MODE_FIERY = 14
+GAME_MODE_RUN = 15
+GAME_MODE_VIRUS = 16
+GAME_MODE_SIMON = 17
+GAME_MODE_DUEL = 18 -- needs to be at the end due to its special nature
+GAME_MODE_MAX = 19
 
 TEAM_SELECTION_RANDOM = 0
 TEAM_SELECTION_HOST = 1
@@ -49,23 +50,22 @@ LEVEL_DUEL = level_register("level_arena_entry", COURSE_NONE, "Duel", "duel", 28
 LEVEL_TOAD_TOWN = level_register("level_toad_town_entry", COURSE_NONE, "Toad Town", "toadtown", 28000, 0x28, 0x28, 0x28)
 LEVEL_KOOPA_KEEP =
 	level_register("level_bowser_castle_entry", COURSE_NONE, "Koopa Keep", "koopakeep", 28000, 0x28, 0x28, 0x28)
-LEVEL_TEST = level_register("level_test_entry", COURSE_NONE, "Test Level", "test", 28000, 0x28, 0x28, 0x28)
-LEVEL_GLASS_ALT =
-	level_register("level_mbridge_entry", COURSE_NONE, "Memory Bridge", "mbridge", 28000, 0x28, 0x28, 0x28)
+LEVEL_DS_FORT = level_register("level_fort_entry", COURSE_NONE, "DS Fort", "fort", 28000, 0x28, 0x28, 0x28)
+LEVEL_STAIR = level_register("level_stair_entry", COURSE_NONE, "Stairway", "stair", 28000, 0x28, 0x28, 0x28)
 gLevelValues.entryLevel = LEVEL_LOBBY
 warp_to_level(LEVEL_LOBBY, 1, 0)
 
 -- team data (copied from Kart Battles)
 -- in order: light color, dark color, full name (+ color code), short name
 TEAM_DATA = {
-	{ { r = 225, g = 5, b = 49 }, { r = 80, g = 20, b = 20 }, "#ff4040Red Team", "Red" }, -- red (modified ruby)
-	{ { r = 0x00, g = 0x2f, b = 0xc8 }, { r = 20, g = 40, b = 80 }, "#4040ffBlue Team", "Blu" }, -- blue (modified cobalt)
-	{ { r = 0x20, g = 0xc8, b = 0x20 }, { r = 20, g = 80, b = 20 }, "#40ff40Green Team", "Grn" }, -- green (modified clover)
-	{ { r = 0xe7, g = 0xe7, b = 0x21 }, { r = 80, g = 80, b = 20 }, "#ffff40Yellow Team", "Ylw" }, -- yellow (modified busy bee)
-	{ { r = 0xff, g = 0x8a, b = 0x00 }, { r = 80, g = 50, b = 20 }, "#ffa014Orange Team", "Org" }, -- orange (modified... orange)
-	{ { r = 0x5a, g = 0x94, b = 0xff }, { r = 20, g = 50, b = 80 }, "#40ffffCyan Team", "Cyn" }, -- cyan (modified azure)
-	{ { r = 0xff, g = 0x8e, b = 0xb2 }, { r = 0x82, g = 0x10, b = 0x27 }, "#ffa1ebPink Team", "Pnk" }, -- pink (modified bubblegum)
-	{ { r = 0x71, g = 0x36, b = 0xc8 }, { r = 0x26, g = 0x26, b = 0x47 }, "#a040ffViolet Team", "Vlt" }, -- violet (modified waluigi)
+	{ { r = 225, g = 5, b = 49 }, { r = 80, g = 20, b = 20 }, "\\#ff4040\\Red Team", "Red" }, -- red (modified ruby)
+	{ { r = 0x00, g = 0x2f, b = 0xc8 }, { r = 20, g = 40, b = 80 }, "\\#4040ff\\Blue Team", "Blu" }, -- blue (modified cobalt)
+	{ { r = 0x20, g = 0xc8, b = 0x20 }, { r = 20, g = 80, b = 20 }, "\\#40ff40\\Green Team", "Grn" }, -- green (modified clover)
+	{ { r = 0xe7, g = 0xe7, b = 0x21 }, { r = 80, g = 80, b = 20 }, "\\#ffff40\\Yellow Team", "Ylw" }, -- yellow (modified busy bee)
+	{ { r = 0xff, g = 0x8a, b = 0x00 }, { r = 80, g = 50, b = 20 }, "\\#ffa014\\Orange Team", "Org" }, -- orange (modified... orange)
+	{ { r = 0x5a, g = 0x94, b = 0xff }, { r = 20, g = 50, b = 80 }, "\\#40ffff\\Cyan Team", "Cyn" }, -- cyan (modified azure)
+	{ { r = 0xff, g = 0x8e, b = 0xb2 }, { r = 0x82, g = 0x10, b = 0x27 }, "\\#ffa1eb\\Pink Team", "Pnk" }, -- pink (modified bubblegum)
+	{ { r = 0x71, g = 0x36, b = 0xc8 }, { r = 0x26, g = 0x26, b = 0x47 }, "\\#a040ff\\Violet Team", "Vlt" }, -- violet (modified waluigi)
 }
 
 SELECT_MODE_CHOOSE = 0
@@ -109,6 +109,16 @@ gGlobalSyncTable.mingleHurry = false
 gGlobalSyncTable.mingleMaxDoors = 0
 gGlobalSyncTable.mingleDoorsOpen = 0
 gGlobalSyncTable.duelState = DUEL_STATE_WAIT
+gGlobalSyncTable.rDeadlyNum = 0
+
+-- dont know if this is used
+gGlobalSyncTable.superSpeed = false
+gGlobalSyncTable.highGravity = false
+gGlobalSyncTable.lowGravity = false
+gGlobalSyncTable.invertedControls = false
+gGlobalSyncTable.instaKill = false
+
+gGlobalSyncTable.activeModifiersBitfield = 0
 
 desyncTimer = 0
 playerLocalTimer = 0
@@ -126,6 +136,14 @@ rejoin_check = {}
 csVersion = (charSelectExists and charSelect.version_get_full().major) or 0
 disableMusic = 0
 showColorNames = false
+
+modifierBits = {
+	superSpeed = 1 << 0,
+	highGravity = 1 << 1,
+	lowGravity = 1 << 2,
+	invertedControls = 1 << 3,
+	instaKill = 1 << 4,
+}
 
 local WI = require("./b-wins")
 local MWI = require("./c-mWins")
@@ -148,6 +166,7 @@ for i = 0, MAX_PLAYERS - 1 do
 	sMario.fov = 70
 	sMario.rejoinID = "-1"
 	sMario.canBeGrabbed = true
+	sMario.rSelectedNumber = 1
 end
 
 local firstLoaded = false
@@ -178,6 +197,7 @@ function load_on_sync()
 	sMario.fov = 70
 	sMario.rejoinID = get_coopnet_id(0)
 	sMario.canBeGrabbed = true
+	sMario.rSelectedNumber = 1
 	sMario.team = calculate_lowest_member_team()
 	if sMario.rejoinID == "-1" then
 		sMario.rejoinID = gNetworkPlayers[0].name
@@ -217,6 +237,10 @@ hook_event(HOOK_ON_LEVEL_INIT, starting_setup)
 hook_event(HOOK_ON_SYNC_VALID, WI.load_wins)
 hook_event(HOOK_ON_SYNC_VALID, MWI.load_m_wins)
 
+function is_modifier_active(bit)
+	return (gGlobalSyncTable.activeModifiersBitfield & bit) ~= 0
+end
+
 if gGlobalSyncTable.autoGame then
 	gGlobalSyncTable.forceStart = true
 end
@@ -237,61 +261,16 @@ end
 
 hook_event(HOOK_ON_SYNC_VALID, sync_setup)
 
--- Sync setup function (it's mostly a copy of the one for LEVEL_GLASS in the base mod)
-function setup_memory_bridge()
-	local toEliminate = calculate_players_to_eliminate(not gGlobalSyncTable.eliminationMode, true)
-
-	-- assign each pane its break status
-	local glass = obj_get_first_with_behavior_id_and_field_s32(id_bhvGlass, 0x2F, 0)
-	-- the amount of panes can't exceed what we intend to eliminate plus 4, to ensure elimination games don't end really easily
-	-- (this is about double from the original plus 4)
-	local totalPanes = math.max(toEliminate + 8, 10)
-	local row = 0
-	while glass do
-		if row >= totalPanes then
-			glass.oBobombFuseTimer = 2
-			local otherGlass = obj_get_next_with_same_behavior_id_and_field_s32(glass, 0x2F, row)
-			if otherGlass then
-				otherGlass.oBobombFuseTimer = 2
-			end
-			network_send_object(glass, true)
-			if otherGlass then
-				network_send_object(otherGlass, true)
-			end
-		else
-			local otherGlass = obj_get_next_with_same_behavior_id_and_field_s32(glass, 0x2F, row)
-			local glassBreak = math.random(0, 1)
-			if glassBreak == 0 then
-				glass.oBobombFuseTimer = 0
-				if otherGlass then
-					otherGlass.oBobombFuseTimer = 1
-				end
-			else
-				glass.oBobombFuseTimer = 1
-				if otherGlass then
-					otherGlass.oBobombFuseTimer = 0
-				end
-			end
-			network_send_object(glass, true)
-			if otherGlass then
-				network_send_object(otherGlass, true)
-			end
-		end
-
-		row = row + 1
-		glass = obj_get_first_with_behavior_id_and_field_s32(id_bhvGlass, 0x2F, row)
-	end
-end
-
-hook_event(HOOK_ON_SYNC_VALID, sync_setup)
-hook_event(HOOK_ON_SYNC_VALID, setup_memory_bridge)
-
 localWasEliminated = false
 local finalWaterHeight = 0
 ---@param m MarioState
 function before_mario_update(m)
 	menu_controls(m)
 	local sMario = gPlayerSyncTable[m.playerIndex]
+	if is_modifier_active(modifierBits.invertedControls) then
+		m.controller.stickX = -m.controller.stickX
+		m.controller.stickY = -m.controller.stickY
+	end
 	if
 		not sMario.spectator
 		and (gGlobalSyncTable.gameState == GAME_STATE_LOBBY or gGlobalSyncTable.gameState == GAME_STATE_GAME_END)
@@ -337,6 +316,29 @@ end
 
 hook_event(HOOK_BEFORE_MARIO_UPDATE, before_mario_update)
 
+-- speeds up these actions; increases by this amount each frame
+-- -1 is a special case for the stuck actions
+-- Ported from MarioHunt
+local faster_actions = {
+	[ACT_GROUND_BONK] = 1,
+	[ACT_FORWARD_GROUND_KB] = 1,
+	[ACT_BACKWARD_GROUND_KB] = 1,
+	[ACT_DIVE_PICKING_UP] = 3,
+	[ACT_PICKING_UP_BOWSER] = 1,
+	[ACT_HARD_FORWARD_GROUND_KB] = 1,
+	-- [ACT_SOFT_FORWARD_GROUND_KB] = 1,
+	[ACT_HARD_BACKWARD_GROUND_KB] = 1,
+	-- [ACT_SOFT_BACKWARD_GROUND_KB] = 1,
+	[ACT_BACKWARD_WATER_KB] = 2,
+	[ACT_FORWARD_WATER_KB] = 2,
+	-- [ACT_RELEASING_BOWSER] = 2,
+	[ACT_HEAVY_THROW] = 1,
+	[ACT_STOMACH_SLIDE_STOP] = 1,
+	[ACT_BUTT_STUCK_IN_GROUND] = -1,
+	[ACT_FEET_STUCK_IN_GROUND] = -1,
+	[ACT_HEAD_STUCK_IN_GROUND] = -1,
+}
+
 local storedSafeScore = 0
 local marioPoleTime = {}
 local marioBounceTimer = {}
@@ -349,6 +351,12 @@ function mario_update(m)
 	if m.playerIndex == 0 then
 		local standings = get_standings_table("roundScore")
 		storedSafeScore = get_safe_score(standings)
+	end
+
+	if is_modifier_active(modifierBits.instaKill) then
+		if m.hurtCounter > 1 then
+			m.health = 0xff
+		end
 	end
 
 	-- update water in Toad Town
@@ -413,7 +421,9 @@ function mario_update(m)
 			then
 				afkTimer = afkTimer + 1
 				if afkTimer == 50 * 30 then
-					djui_chat_message_create("\\#ff5050\\You will be forced to spectate if you don't move in 10 seconds!")
+					djui_chat_message_create(
+						"\\#ff5050\\You will be forced to spectate if you don't move in 10 seconds!"
+					)
 				elseif afkTimer >= 60 * 30 then
 					afkSpectator = true
 					toggle_spectator()
@@ -542,7 +552,6 @@ function mario_update(m)
 	elseif m.action & (ACT_FLAG_AIR | ACT_FLAG_ON_POLE) == 0 then
 		marioPoleTime[m.playerIndex] = 0
 	end
-
 	local gData = GAME_MODE_DATA[gGlobalSyncTable.gameMode or 0]
 	if gServerSettings.headlessServer ~= 0 and network_is_server() and m.playerIndex == 0 then
 		-- headless is eliminated by default
@@ -560,6 +569,23 @@ function mario_update(m)
 		end
 		if not gData.fallDamage then
 			m.peakHeight = m.pos.y -- disable fall damage
+		end
+		if gData.fasterActions and faster_actions[m.action] then
+			-- faster actions, ported from MarioHunt
+			if faster_actions[m.action] == -1 then
+				if m.actionTimer >= 5 and m.actionTimer <= 7 then
+					m.actionTimer = m.actionTimer + 1
+				else
+					set_anim_to_frame(m, m.marioObj.header.gfx.animInfo.animFrame + 3)
+				end
+			elseif
+				m.action ~= ACT_HARD_FORWARD_GROUND_KB
+				or m.action ~= ACT_HARD_BACKWARD_GROUND_KB
+				or (m.health - 0x40 * m.hurtCounter) > 0xFF
+			then
+				-- new animation system seems to make this not update immediately or something? add an additional 1 so this does something
+				set_anim_to_frame(m, m.marioObj.header.gfx.animInfo.animFrame + faster_actions[m.action] + 1)
+			end
 		end
 		if m.playerIndex == 0 and sMario.spectator and not sMario.eliminated then
 			eliminate_mario(m)
@@ -1486,25 +1512,62 @@ hook_event(HOOK_ON_DEATH, on_death)
 
 -- make bomb tag players move slightly faster; also runs any mode-specific physics step behavior
 function before_phys_step(m, stepType)
+	if is_modifier_active(modifierBits.lowGravity) then
+		if m.vel.y > 0 then
+			if
+				m.action ~= ACT_TWIRLING
+				and m.action ~= ACT_GETTING_BLOWN
+				and m.action ~= ACT_FLYING_TRIPLE_JUMP
+				and m.action ~= ACT_SHOT_FROM_CANNON
+				and m.action ~= ACT_LAVA_BOOST
+			then
+				m.vel.y = m.vel.y * 1.035
+			end
+		else
+			if m.action == ACT_GROUND_POUND then
+				m.vel.y = m.vel.y / 1.0
+			else
+				m.vel.y = m.vel.y / 1.05
+			end
+		end
+	elseif is_modifier_active(modifierBits.highGravity) then
+		if m.vel.y > 0 then
+			m.vel.y = m.vel.y / 1.02
+		else
+			m.vel.y = m.vel.y * 1.02
+		end
+	end
+	if is_modifier_active(modifierBits.superSpeed) then
+		m.vel.x = m.vel.x * 2
+		m.vel.z = m.vel.z * 2
+	end
+
+	local gData = GAME_MODE_DATA[gGlobalSyncTable.gameMode or 0]
 	if gGlobalSyncTable.gameState ~= GAME_STATE_ACTIVE then
 		return
 	end
-
 	if
 		gGlobalSyncTable.gameMode == GAME_MODE_BOMB_TAG
 		and gPlayerSyncTable[m.playerIndex].holdingBomb
 		and m.action & (ACT_FLAG_INVULNERABLE | ACT_FLAG_CUSTOM_ACTION) == 0
-	then -- don't affect custom or knockback actions
+	then
 		m.vel.x = m.vel.x * 1.1
 		m.vel.z = m.vel.z * 1.1
 	end
-
-	local gData = GAME_MODE_DATA[gGlobalSyncTable.gameMode or 0]
-	if gData and gData.beforePhysStepFunc then
-		return gData.beforePhysStepFunc(m, stepType)
+	if gData and gData.onPhysicalStepFunc then
+		gData.onPhysicalStepFunc(m)
 	end
 end
 hook_event(HOOK_BEFORE_PHYS_STEP, before_phys_step)
+
+function on_interact(m, o, t, v)
+	local gData = GAME_MODE_DATA[gGlobalSyncTable.gameMode or 0]
+	if gData and gData.onInteractFunc then
+		gData.onInteractFunc(m, o, t, v)
+	end
+end
+
+hook_event(HOOK_ON_INTERACT, on_interact)
 
 -- no act select
 function no_act_select(level)

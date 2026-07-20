@@ -713,13 +713,10 @@ function do_game_mode_selection(openMenu, doOrder)
 					end
 				end)
 				if not foundMod then
-					network_send(
-						true,
-						{
-							id = PACKET_GLOBAL_MSG,
-							text = "\\#ffff50\\Since there were no moderators available, the minigame was selected at random.",
-						}
-					)
+					network_send(true, {
+						id = PACKET_GLOBAL_MSG,
+						text = "\\#ffff50\\Since there were no moderators available, the minigame was selected at random.",
+					})
 					selectedMode = math.random(0, GAME_MODE_MAX - 1)
 					manuallyChose = false
 					local LIMIT = 100
@@ -1068,4 +1065,21 @@ function sonic_lose_one_ring(index_)
 	end
 
 	extraCharsSonic.drop_ring(index)
+end
+
+function toggle_modifier_by_bit(bit, forceState)
+	if forceState ~= nil then
+		if forceState then
+			gGlobalSyncTable.activeModifiersBitfield = gGlobalSyncTable.activeModifiersBitfield | bit
+		else
+			gGlobalSyncTable.activeModifiersBitfield = gGlobalSyncTable.activeModifiersBitfield & ~bit
+		end
+		return
+	end
+
+	if is_modifier_active(bit) then
+		gGlobalSyncTable.activeModifiersBitfield = gGlobalSyncTable.activeModifiersBitfield & ~bit
+	else
+		gGlobalSyncTable.activeModifiersBitfield = gGlobalSyncTable.activeModifiersBitfield | bit
+	end
 end
