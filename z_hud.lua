@@ -183,11 +183,11 @@ function on_hud_render()
 			-- display our score and safe score
 			local sMario0 = gPlayerSyncTable[0]
 			local score = sMario0.roundScore or 0
-			local scoreText = "Your score: "
+			local scoreText = translate("yourscore")
 			if sMario0.eliminated and (spectatedPlayer > 0 and spectatedPlayer < MAX_PLAYERS) then
 				-- display spectated player's score instead
 				score = gPlayerSyncTable[spectatedPlayer].roundScore or 0
-				scoreText = "Their score: "
+				scoreText = translate("theirscore")
 			end
 			local scale = 0.25
 			local safeScore = get_safe_score(get_standings_table("roundScore"))
@@ -199,10 +199,10 @@ function on_hud_render()
 			local text2
 			if gData.removeDecimal then
 				text = string.format(scoreText .. color .. "%.0f", score / 10)
-				text2 = string.format("Safe score: %.0f", safeScore / 10)
+				text2 = string.format("%s %.0f", translate("safescore"), safeScore / 10)
 			else
 				text = string.format(scoreText .. color .. "%.1f", score / 10)
-				text2 = string.format("Safe score: %.1f", safeScore / 10)
+				text2 = string.format("%s %.1f", translate("safescore"), safeScore / 10)
 			end
 			local width = djui_hud_measure_text(remove_color(text)) * scale
 			local width2 = djui_hud_measure_text(remove_color(text2)) * scale
@@ -364,9 +364,17 @@ function on_hud_render()
 			sideBarLines = {} -- no side bar
 		elseif not sideBarOverride then
 			if roundTime ~= 0 and gameTimeLeft >= roundTimeLeft then
-				add_line_to_table(sideBarLines, get_time_string(roundTimeLeft) .. " until elimination", lengthLimit)
+				add_line_to_table(
+					sideBarLines,
+					get_time_string(roundTimeLeft) .. translate("untilelimination"),
+					lengthLimit
+				)
 			elseif maxTime ~= -1 then
-				add_line_to_table(sideBarLines, get_time_string(gameTimeLeft) .. " until game ends", lengthLimit)
+				add_line_to_table(
+					sideBarLines,
+					get_time_string(gameTimeLeft) .. translate("untilgameends"),
+					lengthLimit
+				)
 			else
 				sideBarLines = {} -- no side bar
 			end

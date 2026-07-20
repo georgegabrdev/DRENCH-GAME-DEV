@@ -81,6 +81,18 @@ local translations = {
 		ready_text = "Ready!",
 
 		waiting_text = "Waiting...",
+
+		untilroundends = " until round ends",
+
+		untilgameends = " until game ends",
+
+		untilelimination = " until elimination",
+
+		yourscore = "Your score: ",
+
+		theirscore = "Their score: ",
+
+		safescore = "Safe score: ",
 	},
 
 	Spanish = {
@@ -169,6 +181,18 @@ local translations = {
 		ready_text = "¡Listo!",
 
 		waiting_text = "Espera...",
+
+		untilroundends = " hasta que termine la ronda",
+
+		untilgameends = " hasta que termine el juego",
+
+		untilelimination = " hasta la eliminación",
+
+		yourscore = "Tu puntuación: ",
+
+		theirscore = "Su puntuación: ",
+
+		safescore = "Puntuación segura: ",
 	},
 	Portuguese = {
 		deadlynumber = "\\#ff5555\\NÚMERO MORTAL: \\#dcdcdc\\",
@@ -255,6 +279,18 @@ local translations = {
 		ready_text = "Preparar!",
 
 		waiting_text = "Esperando...",
+
+		untilroundends = " até o fim da rodada",
+
+		untilgameends = " até o jogo terminar",
+
+		untilelimination = " até a eliminação",
+
+		yourscore = "Sua pontuação: ",
+
+		theirscore = "A pontuação deles: ",
+
+		safescore = "Pontuação segura: ",
 	},
 }
 

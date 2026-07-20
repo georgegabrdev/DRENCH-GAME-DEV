@@ -1301,8 +1301,6 @@ GAME_MODE_DATA = {
 		end,
 		hudRenderFunc = function(screenWidth, screenHeight, sideBarLines, lengthLimit)
 			local gData = GAME_MODE_DATA[gGlobalSyncTable.gameMode or 0]
-			local roundsLeft = math.max(gData.maxRounds - gGlobalSyncTable.round + 1, 1)
-			add_line_to_table(sideBarLines, "" .. translate_roundsleft() .. roundsLeft, lengthLimit)
 			local sMario = gPlayerSyncTable[gMarioStates[0].playerIndex]
 			add_line_to_table(
 				sideBarLines,
@@ -1491,6 +1489,7 @@ GAME_MODE_DATA = {
 		kbStrength = 40,
 		doEliminationPoints = true,
 		autoElimination = true,
+		removeDecimal = true,
 		interact = PLAYER_INTERACTIONS_SOLID,
 		marioUpdateFunc = function(m)
 			if m.playerIndex ~= 0 then
@@ -1537,7 +1536,7 @@ GAME_MODE_DATA = {
 		onInteractFunc = function(m, o, t, v)
 			local sMario = gPlayerSyncTable[m.playerIndex]
 			if o.oInteractType == INTERACT_COIN then
-				sMario.roundScore = sMario.roundScore + 1
+				sMario.roundScore = sMario.roundScore + 10
 				spawn_sync_object(
 					id_bhvFallingBomb,
 					E_MODEL_BLACK_BOBOMB,
@@ -1618,10 +1617,8 @@ GAME_MODE_DATA = {
 		end,
 		hudRenderFunc = function(screenWidth, screenHeight, sideBarLines, lengthLimit)
 			local gData = GAME_MODE_DATA[gGlobalSyncTable.gameMode or 0]
-			local roundsLeft = math.max(gData.maxRounds - gGlobalSyncTable.round + 1, 1)
-			add_line_to_table(sideBarLines, "" .. translate_roundsleft() .. roundsLeft, lengthLimit)
 			if gPlayerSyncTable[gMarioStates[0].playerIndex].virus == true then
-				add_line_to_table(sideBarLines, "" .. translate_you_are_infected(), lengthLimit)
+				add_line_to_table(sideBarLines, "" .. translate("infected"), lengthLimit)
 			end
 		end,
 		descFunc = function(index)
