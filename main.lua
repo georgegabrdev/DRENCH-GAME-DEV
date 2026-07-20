@@ -170,6 +170,10 @@ for i = 0, MAX_PLAYERS - 1 do
 	sMario.gameWins = 0
 	sMario.minigameWins = 0
 	sMario.holdingBomb = false
+	sMario.murderIsMurderer = false
+	sMario.murderIsSheriff = false
+	sMario.rSelectedNumber = 1
+	sMario.virus = false
 	sMario.victory = false
 	sMario.winAwarded = false
 	sMario.validForDuel = false
@@ -201,6 +205,10 @@ function load_on_sync()
 	sMario.tagId = 0
 	sMario.equippedTag = 0
 	sMario.holdingBomb = false
+	sMario.murderIsMurderer = false
+	sMario.murderIsSheriff = false
+	sMario.rSelectedNumber = 1
+	sMario.virus = false
 	sMario.victory = false
 	sMario.winAwarded = false
 	sMario.validForDuel = gGlobalSyncTable.allDuel
@@ -329,6 +337,12 @@ function before_mario_update(m)
 	end
 	if m.playerIndex == 0 then
 		localWasEliminated = sMario.eliminated
+	end
+	if gGlobalSyncTable.gameState == GAME_STATE_ACTIVE then
+		local gData = GAME_MODE_DATA[gGlobalSyncTable.gameMode or 0]
+		if gData and gData.beforeMarioFunc then
+			gData.beforeMarioFunc(m)
+		end
 	end
 end
 

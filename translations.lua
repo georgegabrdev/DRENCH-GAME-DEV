@@ -52,6 +52,8 @@ local translations = {
 
 		desc_death_hit = "Last player standing wins! It's self explanatory. If you get hit, you are ABSOLUTELY cooked. So don't get hit.",
 
+		desc_broken_lamp = "Only 1 player has the lamp. Hit them to steal it. Without it, the darkness drains your health... It's pretty dark. Credits to @RetroGames and others.",
+
 		desc_rope = "Spam the A and Z buttons! For every time you pull the rope with these buttons, you get points. The one who gets the highest score by using their full strength will win! Who is the strongest one?",
 
 		desc_fiery = "Burning Meteors are falling from the sky, burning everything! You need to dodge them, otherwise you will get burned! If you lose all your health, you will be disqualified, plus the blue fire is permanent! Endure until the end!",

@@ -1212,6 +1212,7 @@ GAME_MODE_DATA = {
 		doEliminationPoints = true,
 		marioUpdateFunc = function(m)
 			m.health = 2176
+			m.freeze = true
 			sonic_set_full_rings(m.playerIndex)
 			if m.action == ACT_LAVA_BOOST then
 				set_to_spawn_pos(m, true)
@@ -1347,7 +1348,7 @@ GAME_MODE_DATA = {
 		level = LEVEL_LIGHTS_OUT,
 		interact = PLAYER_INTERACTIONS_SOLID,
 		kbStrength = 30,
-		music = "slider",
+		music = "quick",
 		roundTime = 150,
 		maxRounds = 15,
 		doEliminationPoints = true,
@@ -1395,7 +1396,7 @@ GAME_MODE_DATA = {
 		desc = translate("desc_rope"),
 		level = LEVEL_DUEL,
 		interact = PLAYER_INTERACTIONS_NONE,
-		music = "intense",
+		music = "quick",
 		firstRoundTime = 600,
 		roundTime = 450,
 		maxRounds = 5,
@@ -1445,7 +1446,7 @@ GAME_MODE_DATA = {
 		level = LEVEL_BOWSER_2,
 		interact = PLAYER_INTERACTIONS_SOLID,
 		kbStrength = 8,
-		music = "slider",
+		music = "quick",
 		roundTime = 900,
 		maxRounds = 3,
 		doEliminationPoints = true,
@@ -1557,7 +1558,7 @@ GAME_MODE_DATA = {
 			LEVEL_LIGHTS_OUT,
 			LEVEL_DS_FORT,
 		},
-		music = "slider",
+		music = "quick",
 		interact = PLAYER_INTERACTIONS_PVP,
 		firstRoundTime = 1500,
 		roundTime = 900,
@@ -1684,7 +1685,7 @@ GAME_MODE_DATA = {
 			for var = 1, 35 do
 				if GSC.roundTimer == 6 * var * 30 then
 					play_sound(SOUND_ACTION_CLIMB_UP_TREE, gGlobalSoundSource)
-					djui_chat_message_create("" .. translate("simon") .. translate("simon"))
+					djui_chat_message_create("" .. translate("simon") .. translate_simon_do())
 				end
 			end
 			if GSC.round == 1 and GSC.roundTimer == 1 then
@@ -1697,6 +1698,102 @@ GAME_MODE_DATA = {
 				if gGlobalSyncTable.roundTimer == 6 * var * 30 - 5 then
 					gGlobalSyncTable.simonSays = math.random(1, 8)
 				end
+			end
+		end,
+	},
+	[GAME_MODE_FREEZE_TAG] = {
+		name = "Freeze Tag",
+		desc = "Tag players to freeze them. Unfreeze your teammates before everyone is frozen!",
+		level = { LEVEL_TOAD_TOWN, LEVEL_KOOPA_KEEP },
+		interact = PLAYER_INTERACTIONS_PVP,
+		kbStrength = 5,
+		music = "slider",
+		roundTime = 60 * 30,
+		maxRounds = 5,
+		fasterActions = true,
+		hostUpdateFunc = function()
+			if gGlobalSyncTable.roundTimer ~= 1 then
+				return
+			end
+
+			local alive = {}
+
+			for_each_connected_player(function(i)
+				local s = gPlayerSyncTable[i]
+
+				if not s.eliminated then
+					s.isTagger = false
+					s.frozen = false
+					table.insert(alive, i)
+				end
+			end)
+
+			if #alive > 0 then
+				local chosen = alive[math.random(#alive)]
+				gPlayerSyncTable[chosen].isTagger = true
+			end
+
+			local frozen = 0
+			local runners = 0
+
+			for_each_connected_player(function(i)
+				local s = gPlayerSyncTable[i]
+
+				if not s.eliminated and not s.isTagger then
+					runners = runners + 1
+
+					if s.frozen then
+						frozen = frozen + 1
+					end
+				end
+			end)
+
+			if runners > 0 and frozen == runners then
+				return true
+			end
+		end,
+		onPvpFunc = function(attacker, victim)
+			local sA = gPlayerSyncTable[attacker.playerIndex]
+			local sV = gPlayerSyncTable[victim.playerIndex]
+
+			victim.hurtCounter = 0
+
+			if sA.isTagger and not sV.isTagger then
+				sV.frozen = true
+			elseif not sA.isTagger and sV.frozen then
+				sV.frozen = false
+			end
+		end,
+		marioUpdateFunc = function(m)
+			local s = gPlayerSyncTable[m.playerIndex]
+
+			if s.frozen then
+				m.freeze = true
+				for_each_connected_player(function(i)
+					if i == m.playerIndex then
+						return
+					end
+
+					local other = gMarioStates[i]
+					local sOther = gPlayerSyncTable[i]
+
+					if sOther.isTagger then
+						return
+					end
+
+					if dist_between_objects(m.marioObj, other.marioObj) < 200 then
+						s.frozen = false
+					end
+				end)
+			end
+		end,
+		descFunc = function(index)
+			local s = gPlayerSyncTable[index]
+
+			if s.isTagger then
+				return "Tagger", true, true
+			elseif s.frozen then
+				return "Frozen", false
 			end
 		end,
 	},

@@ -179,7 +179,7 @@ function Mod.render_warning_popups()
 			local prevProgress = prevTimer / p.timeEnter
 			local yPrev = startY + (targetY - startY) * prevProgress
 
-			local r, g, b = 132, 225, 255 -- cyan
+			local r, g, b = 0, 128, 128 -- cyan
 			local baseRectAlpha = 64
 			local baseTextAlpha = 255
 

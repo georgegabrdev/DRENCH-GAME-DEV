@@ -110,6 +110,14 @@ local musicData = {
 		musicName = "Stealth - Deltarune",
 	},
 
+	quick = {
+		audio = audio_stream_load("music-quick.ogg"),
+		loop = true,
+		loopStart = 0,
+		loopEnd = -1,
+		musicName = "Run! - Undertale",
+	},
+
 	finalOutro = {
 		audio = audio_stream_load("music-final-outro.ogg"),
 	},
