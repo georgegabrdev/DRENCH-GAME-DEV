@@ -120,6 +120,15 @@ local function on_sync_valid()
 	end
 end
 
+local function get_team_tag(playerIndex)
+	local m = gMarioStates[playerIndex]
+	if not m or not m.team or not TEAM_DATA[m.team] then
+		return ""
+	end
+
+	return TEAM_DATA[m.team][3] .. " "
+end
+
 local function get_formatted_tag(playerIndex)
 	local tagId = gPlayerSyncTable[playerIndex].tagId or 0
 	local str = ""
@@ -137,6 +146,7 @@ local function get_player_display_name(playerIndex)
 	local np = gNetworkPlayers[playerIndex]
 	local playerColor = network_get_player_text_color_string(playerIndex)
 	local tagStr = get_formatted_tag(playerIndex)
+	local teamStr = get_team_tag(playerIndex)
 
 	if not np then
 		return ""
@@ -147,7 +157,7 @@ local function get_player_display_name(playerIndex)
 		name = "Player " .. playerIndex
 	end
 
-	return string.format("%s%s%s", tagStr, playerColor, name)
+	return string.format("%s%s%s%s", teamStr, tagStr, playerColor, name)
 end
 
 local function main_update()

@@ -770,25 +770,18 @@ function on_hud_render()
 		end
 	end
 	local modifiers = {}
+	local modifierList = {
+		{ modifierBits.superSpeed, "50ff50", "Super Speed" },
+		{ modifierBits.highGravity, "ff5050", "High Gravity" },
+		{ modifierBits.lowGravity, "50a0ff", "Low Gravity" },
+		{ modifierBits.invertedControls, "ff8080", "Reverse Controls" },
+		{ modifierBits.instaKill, "ff0000", "Instakill" },
+	}
 
-	if is_modifier_active(modifierBits.superSpeed) then
-		modifiers[#modifiers + 1] = "\\#50ff50\\Super Speed"
-	end
-
-	if is_modifier_active(modifierBits.highGravity) then
-		modifiers[#modifiers + 1] = "\\#ff5050\\High Gravity"
-	end
-
-	if is_modifier_active(modifierBits.lowGravity) then
-		modifiers[#modifiers + 1] = "\\#50a0ff\\Low Gravity"
-	end
-
-	if is_modifier_active(modifierBits.invertedControls) then
-		modifiers[#modifiers + 1] = "\\#ff8080\\Reverse Controls"
-	end
-
-	if is_modifier_active(modifierBits.instaKill) then
-		modifiers[#modifiers + 1] = "\\#ff0000\\Instakill"
+	for _, mod in ipairs(modifierList) do
+		if is_modifier_active(mod[1]) then
+			modifiers[#modifiers + 1] = "\\#" .. mod[2] .. "\\" .. mod[3]
+		end
 	end
 
 	if #modifiers > 0 then
