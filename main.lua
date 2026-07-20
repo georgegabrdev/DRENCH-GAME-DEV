@@ -123,6 +123,8 @@ gGlobalSyncTable.highGravity = false
 gGlobalSyncTable.lowGravity = false
 gGlobalSyncTable.invertedControls = false
 gGlobalSyncTable.instaKill = false
+gGlobalSyncTable.ZBC = false
+gGlobalSyncTable.BBC = false
 
 gGlobalSyncTable.activeModifiersBitfield = 0
 
@@ -149,6 +151,8 @@ modifierBits = {
 	lowGravity = 1 << 2,
 	invertedControls = 1 << 3,
 	instaKill = 1 << 4,
+	ZBC = 1 << 5,
+	BBC = 1 << 6,
 }
 
 local WI = require("./b-wins")
@@ -276,6 +280,14 @@ function before_mario_update(m)
 	if is_modifier_active(modifierBits.invertedControls) then
 		m.controller.stickX = -m.controller.stickX
 		m.controller.stickY = -m.controller.stickY
+	end
+	if is_modifier_active(modifierBits.BBC) then
+		m.controller.buttonPressed = m.controller.buttonPressed & ~B_BUTTON
+		m.controller.buttonDown = m.controller.buttonDown & ~B_BUTTON
+	end
+	if is_modifier_active(modifierBits.ZBC) then
+		m.controller.buttonPressed = m.controller.buttonPressed & ~Z_TRIG
+		m.controller.buttonDown = m.controller.buttonDown & ~Z_TRIG
 	end
 	if
 		not sMario.spectator

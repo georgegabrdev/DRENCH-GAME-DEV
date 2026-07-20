@@ -785,8 +785,10 @@ function on_hud_render()
 		{ modifierBits.superSpeed, "50ff50", "Super Speed" },
 		{ modifierBits.highGravity, "ff5050", "High Gravity" },
 		{ modifierBits.lowGravity, "50a0ff", "Low Gravity" },
-		{ modifierBits.invertedControls, "ff8080", "Reverse Controls" },
+		{ modifierBits.invertedControls, "ff8080", "Inverted Controls" },
 		{ modifierBits.instaKill, "ff0000", "Instakill" },
+		{ modifierBits.ZBC, "ff5050", "Z Button Challenge" },
+		{ modifierBits.BBC, "ff5050", "B Button Challenge" },
 	}
 
 	for _, mod in ipairs(modifierList) do
@@ -1528,6 +1530,30 @@ menu_data = {
 			"Instakill",
 			function(x)
 				toggle_modifier_by_bit(modifierBits.instaKill, x ~= 0)
+			end,
+			false,
+			runOnChange = true,
+			currNum = 0,
+			minNum = 0,
+			maxNum = 1,
+			nameRef = { "\\#ff5050\\Off", "\\#50ff50\\On" },
+		},
+		{
+			"Z Button Challenge",
+			function(x)
+				toggle_modifier_by_bit(modifierBits.ZBC, x ~= 0)
+			end,
+			false,
+			runOnChange = true,
+			currNum = 0,
+			minNum = 0,
+			maxNum = 1,
+			nameRef = { "\\#ff5050\\Off", "\\#50ff50\\On" },
+		},
+		{
+			"B Button Challenge",
+			function(x)
+				toggle_modifier_by_bit(modifierBits.BBC, x ~= 0)
 			end,
 			false,
 			runOnChange = true,
