@@ -21,3 +21,9 @@ function on_chat_message_again(msg)
 end
 
 hook_chat_command("nuclearbomb", "No.", on_chat_message_again)
+
+function end_round()
+	gGlobalSyncTable.gameState = GAME_STATE_MINI_END
+end
+
+hook_chat_command("end", "Ends the round", end_round)
