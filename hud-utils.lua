@@ -660,24 +660,6 @@ function HU.calc_anim_value(t, animObj)
 	end
 end
 
-local function utf8_chars(str)
-	local i = 1
-	return function()
-		if i > #str then
-			return nil
-		end
-		local c = str:sub(i, i)
-		i = i + 1
-		return i, c
-	end
-end
-
-local function hex_to_rgb(hex)
-	hex = hex:gsub("#", "")
-
-	return tonumber(hex:sub(1, 2), 16) or 255, tonumber(hex:sub(3, 4), 16) or 255, tonumber(hex:sub(5, 6), 16) or 255
-end
-
 ---@param text string
 ---@param x integer
 ---@param y integer

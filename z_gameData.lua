@@ -10,7 +10,7 @@ GAME_MODE_DATA = {
 		name = "Glass Bridge",
 		desc = translate("desc_glass"),
 		level = LEVEL_GLASS,
-		interact = PLAYER_INTERACTIONS_SOLID,
+		interact = PLAYER_INTERACTIONS_NONE,
 		kbStrength = 5,
 		music = "dire",
 		fasterActions = true,
@@ -1212,7 +1212,6 @@ GAME_MODE_DATA = {
 		doEliminationPoints = true,
 		marioUpdateFunc = function(m)
 			m.health = 2176
-			m.freeze = true
 			sonic_set_full_rings(m.playerIndex)
 			if m.action == ACT_LAVA_BOOST then
 				set_to_spawn_pos(m, true)
@@ -1348,7 +1347,7 @@ GAME_MODE_DATA = {
 		level = LEVEL_LIGHTS_OUT,
 		interact = PLAYER_INTERACTIONS_SOLID,
 		kbStrength = 30,
-		music = "quick",
+		music = "slider",
 		roundTime = 150,
 		maxRounds = 15,
 		doEliminationPoints = true,
@@ -1698,102 +1697,6 @@ GAME_MODE_DATA = {
 				if gGlobalSyncTable.roundTimer == 6 * var * 30 - 5 then
 					gGlobalSyncTable.simonSays = math.random(1, 8)
 				end
-			end
-		end,
-	},
-	[GAME_MODE_FREEZE_TAG] = {
-		name = "Freeze Tag",
-		desc = "Tag players to freeze them. Unfreeze your teammates before everyone is frozen!",
-		level = { LEVEL_TOAD_TOWN, LEVEL_KOOPA_KEEP },
-		interact = PLAYER_INTERACTIONS_PVP,
-		kbStrength = 5,
-		music = "slider",
-		roundTime = 60 * 30,
-		maxRounds = 5,
-		fasterActions = true,
-		hostUpdateFunc = function()
-			if gGlobalSyncTable.roundTimer ~= 1 then
-				return
-			end
-
-			local alive = {}
-
-			for_each_connected_player(function(i)
-				local s = gPlayerSyncTable[i]
-
-				if not s.eliminated then
-					s.isTagger = false
-					s.frozen = false
-					table.insert(alive, i)
-				end
-			end)
-
-			if #alive > 0 then
-				local chosen = alive[math.random(#alive)]
-				gPlayerSyncTable[chosen].isTagger = true
-			end
-
-			local frozen = 0
-			local runners = 0
-
-			for_each_connected_player(function(i)
-				local s = gPlayerSyncTable[i]
-
-				if not s.eliminated and not s.isTagger then
-					runners = runners + 1
-
-					if s.frozen then
-						frozen = frozen + 1
-					end
-				end
-			end)
-
-			if runners > 0 and frozen == runners then
-				return true
-			end
-		end,
-		onPvpFunc = function(attacker, victim)
-			local sA = gPlayerSyncTable[attacker.playerIndex]
-			local sV = gPlayerSyncTable[victim.playerIndex]
-
-			victim.hurtCounter = 0
-
-			if sA.isTagger and not sV.isTagger then
-				sV.frozen = true
-			elseif not sA.isTagger and sV.frozen then
-				sV.frozen = false
-			end
-		end,
-		marioUpdateFunc = function(m)
-			local s = gPlayerSyncTable[m.playerIndex]
-
-			if s.frozen then
-				m.freeze = true
-				for_each_connected_player(function(i)
-					if i == m.playerIndex then
-						return
-					end
-
-					local other = gMarioStates[i]
-					local sOther = gPlayerSyncTable[i]
-
-					if sOther.isTagger then
-						return
-					end
-
-					if dist_between_objects(m.marioObj, other.marioObj) < 200 then
-						s.frozen = false
-					end
-				end)
-			end
-		end,
-		descFunc = function(index)
-			local s = gPlayerSyncTable[index]
-
-			if s.isTagger then
-				return "Tagger", true, true
-			elseif s.frozen then
-				return "Frozen", false
 			end
 		end,
 	},

@@ -1110,3 +1110,53 @@ function act_ragdoll(m)
 end
 
 hook_mario_action(ACT_RAGDOLL, act_ragdoll)
+
+local function hex_valid(hex)
+	-- remove the # and the \\ from the hex so that we can check it properly
+	hex = hex:gsub("#", "")
+	hex = hex:gsub("\\", "")
+	for i = 0, 2 do
+		local hexCode = "0x" .. hex:sub(i * 2 + 1, i * 2 + 2)
+		if tonumber(hexCode) == nil then
+			return false
+		end
+	end
+	return true
+end
+
+function hex_to_rgb(hex)
+	-- remove the # and the \\ from the hex so that we can convert it properly
+	hex = hex:gsub("#", "")
+	hex = hex:gsub("\\", "")
+
+	-- honestly I copied this from the rainmeter (windows customization) forum... credit to jsmorely!
+	if hex_valid(hex) then
+		return tonumber("0x" .. hex:sub(1, 2)), tonumber("0x" .. hex:sub(3, 4)), tonumber("0x" .. hex:sub(5, 6))
+	else
+		return 0, 0, 0
+	end
+end
+
+function utf8_chars(str)
+	str = tostring(str or "")
+	local chars = {}
+	local status, len = pcall(utf8.len, str)
+	if not status or not len then
+		for i = 1, #str do
+			table.insert(chars, str:sub(i, i))
+		end
+	else
+		for _, codepoint in utf8.codes(str) do
+			table.insert(chars, utf8.char(codepoint))
+		end
+	end
+
+	local i = 0
+	local n = #chars
+	return function()
+		i = i + 1
+		if i <= n then
+			return i, chars[i]
+		end
+	end
+end
