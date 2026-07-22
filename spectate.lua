@@ -1,6 +1,7 @@
 -- spectate action
 ACT_SPECTATE = ACT_BUBBLED -- replace bubbled action so it doesn't do syncing
 ACT_FREECAM = allocate_mario_action(ACT_GROUP_AIRBORNE | ACT_FLAG_INVULNERABLE)
+ACT_GHOST = allocate_mario_action(ACT_GROUP_AIRBORNE | ACT_FLAG_INVULNERABLE)
 
 spectatedPlayer = 0
 local lastDir = 0
@@ -92,6 +93,57 @@ local function update_fp_camera(m)
 	gLakituState.focHSpeed, gLakituState.focVSpeed = 0, 0
 end
 
+function act_ghost(m)
+	m.marioObj.header.gfx.node.flags = m.marioObj.header.gfx.node.flags | GRAPH_RENDER_INVISIBLE
+
+	m.health = 0x880
+
+	m.marioObj.oIntangibleTimer = -1
+	m.marioObj.oInteractType = 0
+
+	if m.playerIndex ~= 0 then
+		return
+	end
+
+	-- X returns to spectate
+	if (m.controller.buttonPressed & X_BUTTON) ~= 0 then
+		set_mario_action(m, ACT_SPECTATE, 0)
+
+		m.flags = m.flags & ~MARIO_VANISH_CAP
+
+		return
+	end
+
+	local speed = ((m.controller.buttonDown & B_BUTTON) ~= 0) and 200 or 100
+
+	if m.intendedMag > 0 then
+		m.vel.x = (m.intendedMag / 32) * speed * sins(m.intendedYaw)
+		m.vel.z = (m.intendedMag / 32) * speed * coss(m.intendedYaw)
+		m.faceAngle.y = m.intendedYaw
+	else
+		m.vel.x = 0
+		m.vel.z = 0
+	end
+
+	m.vel.y = 0
+
+	if (m.controller.buttonDown & A_BUTTON) ~= 0 then
+		m.vel.y = speed * 0.6
+	end
+
+	if (m.controller.buttonDown & Z_TRIG) ~= 0 then
+		m.vel.y = -speed * 0.6
+	end
+
+	perform_air_step(m, 0)
+
+	m.forwardVel = math.sqrt(m.vel.x * m.vel.x + m.vel.z * m.vel.z)
+
+	vec3s_set(m.marioObj.header.gfx.angle, m.faceAngle.x, m.faceAngle.y, m.faceAngle.z)
+end
+
+hook_mario_action(ACT_GHOST, act_ghost)
+
 function act_freecam(m)
 	m.marioObj.header.gfx.node.flags = m.marioObj.header.gfx.node.flags | GRAPH_RENDER_INVISIBLE
 
@@ -103,7 +155,7 @@ function act_freecam(m)
 
 	-- press X to return to spectating
 	if (m.controller.buttonPressed & X_BUTTON) ~= 0 then
-		set_mario_action(m, ACT_SPECTATE, 0)
+		set_mario_action(m, ACT_GHOST, 0)
 
 		camera_unfreeze()
 		set_override_near(0)
@@ -138,13 +190,13 @@ function act_spectate(m)
 	if (m.controller.buttonPressed & X_BUTTON) ~= 0 then
 		set_mario_action(m, ACT_FREECAM, 0)
 
-		-- start camera at current position
-		vec3f_copy(sPlayerFirstPerson.pos, m.pos)
-		sPlayerFirstPerson.pitch = 0
-		sPlayerFirstPerson.yaw = m.faceAngle.y
+		m.flags = m.flags | MARIO_VANISH_CAP
 
-		camera_freeze()
-		set_override_near(45)
+		m.vel.x = 0
+		m.vel.y = 0
+		m.vel.z = 0
+
+		return
 	end
 
 	-- allow switching; auto switch if our player is invalid
@@ -191,3 +243,5 @@ end
 hook_mario_action(ACT_SPECTATE, act_spectate)
 
 hook_mario_action(ACT_FREECAM, act_freecam)
+
+hook_mario_action(ACT_GHOST, act_ghost)
