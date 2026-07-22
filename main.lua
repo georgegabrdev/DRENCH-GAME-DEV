@@ -1,4 +1,4 @@
--- name: \\#00ffff\\Drench Game Deluxe v1.2.6.1 [WIP]
+-- name: \\#00ffff\\Drench Game Deluxe v1.2.6.2 [WIP]
 -- description: Squid Game in Mario 64!\n\nCommissioned by Drenchy\nInspired by Dani's \"Crab Game\"\n\nProgramming: EmilyEmmi\n\nMaps: biobak, EmilyEmmi, Woissil\n\nSoundtrack: murioz, Awesome Seal Guy (YT)\n\nVoice Acting:\nEspi as Toad\nSqueex as Mingle Callout\nTrashcam as Waluigi\n\nAds: Squeex's Community\n\nSpecial Thanks: Squishy
 -- category: gamemode
 -- incompatible: gamemode
@@ -1766,7 +1766,7 @@ function on_player_disconnected(m)
 				local name = network_get_player_text_color_string(m.playerIndex) .. gNetworkPlayers[m.playerIndex].name
 				local teamName = TEAM_DATA[sMario.team][3] or "???"
 				djui_chat_message_create(
-					name .. "'s#\\ffff50\\ points were distributed among " .. teamName .. "#\\ffff50\\."
+					name .. "'s\\#ffff50\\ points were distributed among " .. teamName .. "\\#ffff50\\."
 				)
 
 				if network_is_server() then

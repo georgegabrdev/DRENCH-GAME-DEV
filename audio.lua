@@ -115,7 +115,7 @@ local musicData = {
 		loop = true,
 		loopStart = 0,
 		loopEnd = -1,
-		musicName = "Run! - Undertale",
+		musicName = "Attack of the Killer Queen - Deltarune",
 	},
 
 	finalOutro = {

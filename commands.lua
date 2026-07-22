@@ -23,6 +23,12 @@ end
 hook_chat_command("nuclearbomb", "No.", on_chat_message_again)
 
 function end_round()
+	if not network_is_server() and not network_is_moderator() then
+		djui_chat_message_create(
+			"\\#ff5050\\You have permission to perform this command... or DO you?\n(No, you don't have moderator)"
+		)
+		return
+	end
 	gGlobalSyncTable.gameState = GAME_STATE_MINI_END
 end
 

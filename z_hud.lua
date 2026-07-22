@@ -387,12 +387,11 @@ function on_hud_render()
 
 			local targetName = "Unknown"
 
-			if gNetworkPlayers[targetPlayer] then
-				local np = gNetworkPlayers[targetPlayer]
-				targetName = network_get_player_text_color_string(np) .. get_display_name(np)
+			if gNetworkPlayers[spectatedPlayer] then
+				targetName = network_get_player_text_color_string(spectatedPlayer) .. get_display_name(spectatedPlayer)
 			end
 
-			local text = "< " .. targetName .. " >"
+			local text = "\\#ffffff\\< " .. targetName .. " \\#ffffff\\>"
 
 			local rawWidth = djui_hud_measure_text(text)
 			local measureText = rawWidth * scale
@@ -408,11 +407,14 @@ function on_hud_render()
 			local rectY = y - paddingY
 
 			if gNetworkPlayers[targetPlayer] then
+				djui_hud_set_color(0, 255, 255, 128)
 				HU.djui_hud_render_rect_rounded_outlined(rectX, rectY, rectWidth, rectHeight, 8, 56, 59, thickness, 128)
 			else
+				djui_hud_set_color(0, 255, 255, 128)
 				HU.djui_hud_render_rect_rounded(rectX, rectY, rectWidth, rectHeight, 5)
 			end
 
+			djui_hud_set_color(255, 255, 255, 255)
 			djui_hud_print_text(text, x, y, scale)
 		end
 	elseif gGlobalSyncTable.gameState == GAME_STATE_MINI_END then

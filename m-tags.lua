@@ -43,6 +43,8 @@ local discordToTag = {
 	["980159405674856478"] = TAG_TYPE.CREATOR, -- Georgegabr1
 }
 
+--980159405674856478
+
 -----------------
 --- TAG LOGIC ---
 -----------------
@@ -172,19 +174,26 @@ end
 local function on_chat_message(m, msg)
 	local s = gPlayerSyncTable[m.playerIndex]
 
-	if s and s.tagId and s.tagId > 0 then
-		local displayName = get_player_display_name(m.playerIndex)
-		local formattedMsg = string.format("%s\\#dcdcdc\\: %s", displayName, msg)
-
-		djui_chat_message_create(formattedMsg)
-
-		if m.playerIndex == 0 then
-			play_sound(SOUND_MENU_MESSAGE_DISAPPEAR, gGlobalSoundSource)
-		else
-			play_sound(SOUND_MENU_MESSAGE_APPEAR, gGlobalSoundSource)
-		end
-		return false
+	if not s then
+		return
 	end
+
+	if (s.tagId or 0) == 0 and (not s.team or not TEAM_DATA[s.team]) then
+		return
+	end
+
+	local displayName = get_player_display_name(m.playerIndex)
+	local formattedMsg = string.format("%s\\#dcdcdc\\: %s", displayName, msg)
+
+	djui_chat_message_create(formattedMsg)
+
+	if m.playerIndex == 0 then
+		play_sound(SOUND_MENU_MESSAGE_DISAPPEAR, gGlobalSoundSource)
+	else
+		play_sound(SOUND_MENU_MESSAGE_APPEAR, gGlobalSoundSource)
+	end
+
+	return false
 end
 
 ------------------

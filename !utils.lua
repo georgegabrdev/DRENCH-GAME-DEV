@@ -1160,3 +1160,10 @@ function utf8_chars(str)
 		end
 	end
 end
+
+function if_then_else(cond, if_true, if_false)
+	if cond then
+		return if_true
+	end
+	return if_false
+end
