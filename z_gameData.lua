@@ -8,12 +8,12 @@ local coinRainInterval = 10 -- spawn every 20 frames
 GAME_MODE_DATA = {
 	[GAME_MODE_GLASS] = {
 		name = "Glass Bridge",
-		desc = translate("desc_glass"),
+		desc = "Get across the bridge without falling! Only one glass pane is safe in each row. Will you push your luck, or let someone else take the fall?",
 		level = LEVEL_GLASS,
-		interact = PLAYER_INTERACTIONS_NONE,
+		interact = PLAYER_INTERACTIONS_SOLID,
 		kbStrength = 5,
-		music = "dire",
 		fasterActions = true,
+		music = "dire",
 		marioUpdateFunc = function(m) -- switch to custom falling action
 			if
 				m.action & ACT_GROUP_MASK ~= ACT_GROUP_CUTSCENE
