@@ -142,8 +142,6 @@ function act_ghost(m)
 	vec3s_set(m.marioObj.header.gfx.angle, m.faceAngle.x, m.faceAngle.y, m.faceAngle.z)
 end
 
-hook_mario_action(ACT_GHOST, act_ghost)
-
 function act_freecam(m)
 	m.marioObj.header.gfx.node.flags = m.marioObj.header.gfx.node.flags | GRAPH_RENDER_INVISIBLE
 

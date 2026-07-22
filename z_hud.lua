@@ -1472,10 +1472,6 @@ menu_data = {
 
 local TEX_DRENCH = get_texture_info("drench_icon")
 
--- ============================================================
--- RENDER MENU (WarioWare-style: animated bg, side desc panel,
---              smooth motion, animated scroll bar)
--- ============================================================
 function render_menu()
 	djui_hud_set_resolution(RESOLUTION_DJUI)
 	djui_hud_set_font(FONT_NORMAL)
