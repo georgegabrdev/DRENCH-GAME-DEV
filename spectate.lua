@@ -107,7 +107,7 @@ function act_ghost(m)
 
 	-- X returns to spectate
 	if (m.controller.buttonPressed & X_BUTTON) ~= 0 then
-		set_mario_action(m, ACT_SPECTATE, 0)
+		set_mario_action(m, ACT_FREECAM, 0)
 
 		m.flags = m.flags & ~MARIO_VANISH_CAP
 
@@ -155,7 +155,7 @@ function act_freecam(m)
 
 	-- press X to return to spectating
 	if (m.controller.buttonPressed & X_BUTTON) ~= 0 then
-		set_mario_action(m, ACT_GHOST, 0)
+		set_mario_action(m, ACT_SPECTATE, 0)
 
 		camera_unfreeze()
 		set_override_near(0)
@@ -188,7 +188,7 @@ function act_spectate(m)
 	end
 
 	if (m.controller.buttonPressed & X_BUTTON) ~= 0 then
-		set_mario_action(m, ACT_FREECAM, 0)
+		set_mario_action(m, ACT_GHOST, 0)
 
 		m.flags = m.flags | MARIO_VANISH_CAP
 
