@@ -128,11 +128,25 @@ function on_hud_render()
 		end
 		add_line_to_table(sideBarLines, desc, lengthLimit)
 
+		local CountdownAnim = {
+			time = 0,
+			prevTime = 0,
+
+			anim = {
+				timeEnter = 8,
+				timeStay = 14,
+				timeExit = 8,
+			},
+		}
+
 		if gGlobalSyncTable.gameTimer > 360 then
 			local number = (450 - gGlobalSyncTable.gameTimer) // 30 + 1
+
 			if lastCountdownNumber ~= number then
 				lastCountdownNumber = number
-				countdownTimer = 0
+
+				CountdownAnim.time = 0
+				CountdownAnim.prevTime = 0
 
 				if number == 3 then
 					play_stream_sfx("three", gGlobalSoundSource)
@@ -144,21 +158,100 @@ function on_hud_render()
 					play_stream_sfx("go", gGlobalSoundSource)
 				end
 			end
-			djui_hud_set_font(FONT_MENU)
-			local alpha = 0
-			if countdownTimer < 30 then
-				alpha = -(255 * math.abs(countdownTimer - 15) // 15) + 255
+
+			local total = CountdownAnim.anim.timeEnter + CountdownAnim.anim.timeStay + CountdownAnim.anim.timeExit
+
+			local function get_progress(t)
+				if t <= CountdownAnim.anim.timeEnter then
+					return t / CountdownAnim.anim.timeEnter
+				elseif t <= CountdownAnim.anim.timeEnter + CountdownAnim.anim.timeStay then
+					return 1
+				else
+					local exit = t - CountdownAnim.anim.timeEnter - CountdownAnim.anim.timeStay
+					return 1 - math.min(exit / CountdownAnim.anim.timeExit, 1)
+				end
 			end
-			local scale = 1
-			local width = djui_hud_measure_text(tostring(number)) * scale
-			local x = (screenWidth - width) / 2
-			local y = screenHeight / 2 - 32 * scale
-			djui_hud_set_color(255, 255, 255, alpha)
-			djui_hud_print_text(tostring(number), x, y, scale)
-			djui_hud_set_font(FONT_SPECIAL)
-			countdownTimer = countdownTimer + 1
+
+			local prev = get_progress(CountdownAnim.prevTime)
+			local curr = get_progress(CountdownAnim.time)
+
+			-- smoothstep
+			prev = prev * prev * (3 - 2 * prev)
+			curr = curr * curr * (3 - 2 * curr)
+
+			local alpha = math.floor(255 * curr)
+
+			djui_hud_set_font(FONT_MENU)
+
+			local text = tostring(number)
+			if number == 0 then
+				text = "GO!"
+			end
+
+			local scalePrev = 2.5 - (1.5 * prev)
+			local scaleCurr = 2.5 - (1.5 * curr)
+
+			local screenW = djui_hud_get_screen_width()
+			local screenH = djui_hud_get_screen_height()
+
+			local wPrev = djui_hud_measure_text(text) * scalePrev
+			local wCurr = djui_hud_measure_text(text) * scaleCurr
+
+			local xPrev = (screenW - wPrev) / 2
+			local xCurr = (screenW - wCurr) / 2
+
+			local yPrev = screenH / 2 - 50
+			local yCurr = screenH / 2 - 50
+
+			-- colors
+			local r, g, b = 255, 255, 255
+
+			if number == 3 then
+				r, g, b = 255, 70, 70
+			elseif number == 2 then
+				r, g, b = 255, 200, 50
+			elseif number == 1 then
+				r, g, b = 70, 255, 90
+			elseif number == 0 then
+				r, g, b = 70, 180, 255
+			end
+
+			-- shadow
+			djui_hud_set_color(0, 0, 0, math.floor(alpha * 0.5))
+
+			djui_hud_print_text_interpolated(
+				text,
+				xPrev + 5,
+				yPrev + 5,
+				scalePrev,
+				scalePrev,
+				xCurr + 5,
+				yCurr + 5,
+				scaleCurr,
+				scaleCurr
+			)
+
+			-- main
+			djui_hud_set_color(r, g, b, alpha)
+
+			djui_hud_print_text_interpolated(
+				text,
+				xPrev,
+				yPrev,
+				scalePrev,
+				scalePrev,
+				xCurr,
+				yCurr,
+				scaleCurr,
+				scaleCurr
+			)
+
+			CountdownAnim.prevTime = CountdownAnim.time
+			CountdownAnim.time = CountdownAnim.time + 1
 		else
 			lastCountdownNumber = 0
+			CountdownAnim.time = 0
+			CountdownAnim.prevTime = 0
 		end
 	elseif gGlobalSyncTable.gameState == GAME_STATE_ACTIVE then
 		local gData = GAME_MODE_DATA[gGlobalSyncTable.gameMode]

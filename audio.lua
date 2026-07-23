@@ -44,7 +44,6 @@ local musicData = {
 		audio = audio_stream_load("music-slider-madness-1.ogg"),
 		loop = true,
 		loopStart = 3.256,
-		loopEnd = -1,
 		musicName = "Slider Madness I - Drench Game",
 	},
 
@@ -82,7 +81,6 @@ local musicData = {
 		audio = audio_stream_load("music-slider-casino-1.ogg"),
 		loop = true,
 		loopStart = 2.433,
-		loopEnd = -1,
 		musicName = "Slider Casino I - Drench Game",
 	},
 
@@ -90,7 +88,6 @@ local musicData = {
 		audio = audio_stream_load("music-slider-casino-2.ogg"),
 		loop = true,
 		loopStart = 2.118,
-		loopEnd = -1,
 		musicName = "Slider Casino II - Drench Game",
 	},
 
@@ -98,7 +95,6 @@ local musicData = {
 		audio = audio_stream_load("music-slider-casino-3.ogg"),
 		loop = true,
 		loopStart = 1.868,
-		loopEnd = -1,
 		musicName = "Slider Casino III - Drench Game",
 	},
 
@@ -106,7 +102,7 @@ local musicData = {
 		audio = audio_stream_load("music-stealth.ogg"),
 		loop = true,
 		loopStart = 0,
-		loopEnd = -1,
+
 		musicName = "Stealth - Deltarune",
 	},
 
@@ -114,7 +110,6 @@ local musicData = {
 		audio = audio_stream_load("music-quick.ogg"),
 		loop = true,
 		loopStart = 0,
-		loopEnd = -1,
 		musicName = "Attack of the Killer Queen - Deltarune",
 	},
 

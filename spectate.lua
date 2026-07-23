@@ -1,7 +1,6 @@
 -- spectate action
 ACT_SPECTATE = ACT_BUBBLED -- replace bubbled action so it doesn't do syncing
 ACT_FREECAM = allocate_mario_action(ACT_GROUP_AIRBORNE | ACT_FLAG_INVULNERABLE)
-ACT_GHOST = allocate_mario_action(ACT_GROUP_AIRBORNE | ACT_FLAG_INVULNERABLE)
 
 spectatedPlayer = 0
 local lastDir = 0
@@ -16,6 +15,20 @@ sPlayerFirstPerson = {
 	currentFov = 45,
 	dist = 1000,
 }
+
+local function common_spectator_update(m)
+	mario_drop_held_object(m)
+	m.squishTimer = 0
+	m.healCounter = 0
+	m.hurtCounter = 0
+
+	m.marioObj.oIntangibleTimer = -1
+	m.marioObj.oInteractType = 0
+	m.invincTimer = 99999999
+
+	m.vel.x, m.vel.y, m.vel.z = 0, 0, 0
+	m.forwardVel = 0
+end
 
 local function update_fp_camera(m)
 	gLakituState.mode = CAMERA_MODE_FREE_ROAM
@@ -93,72 +106,15 @@ local function update_fp_camera(m)
 	gLakituState.focHSpeed, gLakituState.focVSpeed = 0, 0
 end
 
-function act_ghost(m)
-	m.marioObj.header.gfx.node.flags = m.marioObj.header.gfx.node.flags | GRAPH_RENDER_INVISIBLE
-
-	m.health = 0x880
-
-	m.marioObj.oIntangibleTimer = -1
-	m.marioObj.oInteractType = 0
+local function act_freecam(m)
+	common_spectator_update(m)
 
 	if m.playerIndex ~= 0 then
 		return
 	end
 
-	-- X returns to spectate
-	if (m.controller.buttonPressed & X_BUTTON) ~= 0 then
-		set_mario_action(m, ACT_FREECAM, 0)
-
-		m.flags = m.flags & ~MARIO_VANISH_CAP
-
-		return
-	end
-
-	local speed = ((m.controller.buttonDown & B_BUTTON) ~= 0) and 200 or 100
-
-	if m.intendedMag > 0 then
-		m.vel.x = (m.intendedMag / 32) * speed * sins(m.intendedYaw)
-		m.vel.z = (m.intendedMag / 32) * speed * coss(m.intendedYaw)
-		m.faceAngle.y = m.intendedYaw
-	else
-		m.vel.x = 0
-		m.vel.z = 0
-	end
-
-	m.vel.y = 0
-
-	if (m.controller.buttonDown & A_BUTTON) ~= 0 then
-		m.vel.y = speed * 0.6
-	end
-
-	if (m.controller.buttonDown & Z_TRIG) ~= 0 then
-		m.vel.y = -speed * 0.6
-	end
-
-	perform_air_step(m, 0)
-
-	m.forwardVel = math.sqrt(m.vel.x * m.vel.x + m.vel.z * m.vel.z)
-
-	vec3s_set(m.marioObj.header.gfx.angle, m.faceAngle.x, m.faceAngle.y, m.faceAngle.z)
-end
-
-function act_freecam(m)
-	m.marioObj.header.gfx.node.flags = m.marioObj.header.gfx.node.flags | GRAPH_RENDER_INVISIBLE
-
-	m.health = 0x880
-
-	if m.playerIndex ~= 0 then
-		return
-	end
-
-	-- press X to return to spectating
 	if (m.controller.buttonPressed & X_BUTTON) ~= 0 then
 		set_mario_action(m, ACT_SPECTATE, 0)
-
-		camera_unfreeze()
-		set_override_near(0)
-		set_override_fov(0)
-
 		return
 	end
 
@@ -186,9 +142,13 @@ function act_spectate(m)
 	end
 
 	if (m.controller.buttonPressed & X_BUTTON) ~= 0 then
-		set_mario_action(m, ACT_GHOST, 0)
+		set_mario_action(m, ACT_FREECAM, 0)
 
-		m.flags = m.flags | MARIO_VANISH_CAP
+		sPlayerFirstPerson.pos.x = m.pos.x
+		sPlayerFirstPerson.pos.y = m.pos.y + 100
+		sPlayerFirstPerson.pos.z = m.pos.z
+
+		sPlayerFirstPerson.yaw = m.faceAngle.y
 
 		m.vel.x = 0
 		m.vel.y = 0
@@ -241,5 +201,3 @@ end
 hook_mario_action(ACT_SPECTATE, act_spectate)
 
 hook_mario_action(ACT_FREECAM, act_freecam)
-
-hook_mario_action(ACT_GHOST, act_ghost)
