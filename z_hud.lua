@@ -16,6 +16,17 @@ local addPointTimer = 0
 local scoreMenuFinal = false
 local standingsBarCurrY = {}
 local lastCountdownNumber = 0
+
+local CountdownAnim = {
+	time = 0,
+	prevTime = 0,
+
+	anim = {
+		timeEnter = 8,
+		timeStay = 14,
+		timeExit = 8,
+	},
+}
 local countdownTimer = 0
 local hudHint = -1
 local gaveMiniWin = false
@@ -128,17 +139,6 @@ function on_hud_render()
 		end
 		add_line_to_table(sideBarLines, desc, lengthLimit)
 
-		local CountdownAnim = {
-			time = 0,
-			prevTime = 0,
-
-			anim = {
-				timeEnter = 8,
-				timeStay = 14,
-				timeExit = 8,
-			},
-		}
-
 		if gGlobalSyncTable.gameTimer > 360 then
 			local number = (450 - gGlobalSyncTable.gameTimer) // 30 + 1
 
@@ -181,8 +181,6 @@ function on_hud_render()
 
 			local alpha = math.floor(255 * curr)
 
-			djui_hud_set_font(FONT_MENU)
-
 			local text = tostring(number)
 			if number == 0 then
 				text = "GO!"
@@ -221,12 +219,12 @@ function on_hud_render()
 
 			djui_hud_print_text_interpolated(
 				text,
-				xPrev + 5,
-				yPrev + 5,
+				xPrev + 2,
+				yPrev + 2,
 				scalePrev,
 				scalePrev,
-				xCurr + 5,
-				yCurr + 5,
+				xCurr + 2,
+				yCurr + 2,
 				scaleCurr,
 				scaleCurr
 			)
@@ -247,7 +245,7 @@ function on_hud_render()
 			)
 
 			CountdownAnim.prevTime = CountdownAnim.time
-			CountdownAnim.time = CountdownAnim.time + 1
+			CountdownAnim.time = math.min(CountdownAnim.time + 1, total)
 		else
 			lastCountdownNumber = 0
 			CountdownAnim.time = 0

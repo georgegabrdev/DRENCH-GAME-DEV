@@ -144,6 +144,7 @@ local musicVolume = 1
 local targetVolume = 1
 local musicFrequency = 1
 local musicPaused = false
+local mingleMusic = nil
 local pausePoint = 0
 
 local musicPopupTimer = 0
@@ -298,6 +299,17 @@ end
 
 function set_music_frequency(newFrequency)
 	musicFrequency = newFrequency
+end
+
+function set_mingle_music()
+	if mingleMusic == nil then
+		mingleMusic = (math.random(10) == 1) and "sms" or "mingle"
+	end
+	return mingleMusic
+end
+
+function reset_mingle_music()
+	mingleMusic = nil
 end
 
 -- does this even work?
