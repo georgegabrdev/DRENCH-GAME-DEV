@@ -41,6 +41,7 @@ local coopnetToTag = {
 
 local discordToTag = {
 	["980159405674856478"] = TAG_TYPE.CREATOR, -- Georgegabr1
+	["780825981228548177"] = TAG_TYPE.COOL_GUY,
 }
 
 --980159405674856478

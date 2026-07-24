@@ -1,4 +1,4 @@
--- name: \\#00ffff\\Drench Game DX v1.2.6.3 [WIP]
+-- name: \\#00ffff\\Drench Game DX v1.2.7 [WIP]
 -- description: Squid Game in Mario 64!\n\nCommissioned by Drenchy\nInspired by Dani's \"Crab Game\"\n\nProgramming: EmilyEmmi\n\nMaps: biobak, EmilyEmmi, Woissil\n\nSoundtrack: murioz, Awesome Seal Guy (YT)\n\nVoice Acting:\nEspi as Toad\nSqueex as Mingle Callout\nTrashcam as Waluigi\n\nAds: Squeex's Community\n\nSpecial Thanks: Squishy
 -- category: gamemode
 -- incompatible: gamemode
@@ -31,8 +31,9 @@ GAME_MODE_FIERY = 14
 GAME_MODE_RUN = 15
 GAME_MODE_VIRUS = 16
 GAME_MODE_SIMON = 17
-GAME_MODE_DUEL = 18 -- needs to be at the end due to its special nature
-GAME_MODE_MAX = 19
+GAME_MODE_BOMB_THROWER = 18
+GAME_MODE_DUEL = 19 -- needs to be at the end due to its special nature
+GAME_MODE_MAX = 20
 
 TEAM_SELECTION_RANDOM = 0
 TEAM_SELECTION_HOST = 1
@@ -263,20 +264,55 @@ if gGlobalSyncTable.autoGame then
 	gGlobalSyncTable.forceStart = true
 end
 
--- setup on sync, for Glass Bridge
 function sync_setup()
 	set_to_spawn_pos(gMarioStates[0], true)
-	if gGlobalSyncTable.gameState == GAME_STATE_LOBBY or (not network_is_server()) then
+	if gGlobalSyncTable.gameState == GAME_STATE_LOBBY or not network_is_server() then
 		return
 	end
-
 	local np = gNetworkPlayers[0]
-	local levelSetup = LEVEL_SYNC_SETUP[np.currLevelNum]
-	if levelSetup then
-		levelSetup()
+	if np.currLevelNum == LEVEL_GLASS then
+		local toEliminate = calculate_players_to_eliminate(not gGlobalSyncTable.eliminationMode, true)
+		local glass = obj_get_first_with_behavior_id_and_field_s32(id_bhvGlass, 47, 0)
+		local totalPanes = math.clamp(math.ceil(toEliminate / 2) + 2, 3, 10)
+		local row = 0
+		while glass do
+			if totalPanes <= row then
+				glass.oBobombFuseTimer = 2
+				local otherGlass = obj_get_next_with_same_behavior_id_and_field_s32(glass, 47, row)
+				if otherGlass then
+					otherGlass.oBobombFuseTimer = 2
+				end
+				network_send_object(glass, true)
+				if otherGlass then
+					network_send_object(otherGlass, true)
+				end
+			else
+				local otherGlass = obj_get_next_with_same_behavior_id_and_field_s32(glass, 47, row)
+				local glassBreak = math.random(0, 1)
+				if glassBreak == 0 then
+					glass.oBobombFuseTimer = 0
+					if otherGlass then
+						otherGlass.oBobombFuseTimer = 1
+					end
+				else
+					glass.oBobombFuseTimer = 1
+					if otherGlass then
+						otherGlass.oBobombFuseTimer = 0
+					end
+				end
+				if DEBUG_MODE then
+					log_to_console(tostring(row) .. ": " .. tostring(glassBreak))
+				end
+				network_send_object(glass, true)
+				if otherGlass then
+					network_send_object(otherGlass, true)
+				end
+			end
+			row = row + 1
+			glass = obj_get_first_with_behavior_id_and_field_s32(id_bhvGlass, 47, row)
+		end
 	end
 end
-
 hook_event(HOOK_ON_SYNC_VALID, sync_setup)
 
 localWasEliminated = false

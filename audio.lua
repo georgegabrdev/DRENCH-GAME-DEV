@@ -113,6 +113,13 @@ local musicData = {
 		musicName = "Attack of the Killer Queen - Deltarune",
 	},
 
+	sms = {
+		audio = audio_stream_load("music-sms.ogg"),
+		loop = true,
+		loopStart = 0,
+		musicName = "Super Mario Style",
+	},
+
 	finalOutro = {
 		audio = audio_stream_load("music-final-outro.ogg"),
 	},

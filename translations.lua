@@ -70,6 +70,8 @@ local translations = {
 
 		desc_simon = "Listen to Simon! He will write things in the chat and you must do them for points! For example, if he says you must jump into lava, or do a backflip, do it! The one who gets the highest amount of points wins",
 
+		desc_bombthrower = "There's Bob-ombs falling from the sky! If you lose all your health, you lose the minigame! At the end of each round, coins will spawn in the middle of the stage. Survive the longest!",
+
 		minigame_text = "Minigame ",
 
 		spectate_text = "Spectate",
@@ -170,6 +172,8 @@ local translations = {
 
 		desc_simon = "Presta atención a Simón! Él va a escribir cosas en el chat y tienes que hacerlas por puntos! Por ejemplo, si dice que tienes que irte a la lava o hacer un backflip, hazlo! El que tenga la mayor cantidad de puntos gana!",
 
+		desc_bombthrower = "¡Hay Bob-ombas cayendo del cielo! Si pierdes toda tu vida, perderás el minijuego. Al final de cada ronda, aparecerán monedas en el centro del escenario. ¡Sobrevive el mayor tiempo posible!",
+
 		minigame_text = "Minijuego ",
 
 		spectate_text = "Espectador",
@@ -267,6 +271,8 @@ local translations = {
 		desc_virus = "Existe um vírus perigoso! Se for infectado, começará a perder vida, mas pode acertar alguém para se livrar da infecção! Sobreviva o máximo possível.",
 
 		desc_simon = "Compita contra seus amigos para realizar todos os comandos enviados no chat antes que o tempo acabe. Mantenha o foco, siga as regras e consiga a maior quantidade de pontos!",
+
+		desc_bombthrower = "Bob-ombs estão caindo do céu! Se você perder toda a sua vida, perderá o minijogo! No final de cada rodada, moedas aparecerão no centro do cenário. Sobreviva o máximo de tempo possível!",
 
 		minigame_text = "Minijogo ",
 
@@ -366,6 +372,8 @@ local translations = {
 
 		desc_simon = "Écoutez Simon ! Il écrira des commandes dans le chat et vous devrez les exécuter pour gagner des points ! Celui qui obtiendra le plus de points remportera la victoire !",
 
+		desc_bombthrower = "Des Bob-ombs tombent du ciel ! Si vous perdez toute votre vie, vous perdez le mini-jeu ! À la fin de chaque manche, des pièces apparaîtront au centre de l'arène. Survivez le plus longtemps possible !",
+
 		minigame_text = "Mini-jeu ",
 
 		spectate_text = "Observer",
@@ -393,6 +401,41 @@ local translations = {
 		safescore = "Score de sécurité :",
 	},
 }
+function murder_role_calc(IsSheriff, IsMurderer)
+	local lang = smlua_text_utils_get_language()
+
+	if IsSheriff == true then
+		if lang == "Spanish" then
+			return "\\#7affff\\Sheriff"
+		elseif lang == "Portuguese" then
+			return "\\#7affff\\Xerife"
+		elseif lang == "French" then
+			return "\\#7affff\\Shérif"
+		else
+			return "\\#7affff\\Sheriff"
+		end
+	elseif IsMurderer == true then
+		if lang == "Spanish" then
+			return "\\#ff7a7a\\Asesino"
+		elseif lang == "Portuguese" then
+			return "\\#ff7a7a\\Assassino"
+		elseif lang == "French" then
+			return "\\#ff7a7a\\Meurtrier"
+		else
+			return "\\#ff7a7a\\Murderer"
+		end
+	else
+		if lang == "Spanish" then
+			return "\\#7aff7a\\Inocente"
+		elseif lang == "Portuguese" then
+			return "\\#7aff7a\\Inocente"
+		elseif lang == "French" then
+			return "\\#7aff7a\\Innocent"
+		else
+			return "\\#7aff7a\\Innocent"
+		end
+	end
+end
 
 function murder_instructions_calc(IsSheriff, IsMurderer)
 	if IsSheriff then

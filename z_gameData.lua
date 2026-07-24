@@ -8,17 +8,16 @@ local coinRainInterval = 10 -- spawn every 20 frames
 GAME_MODE_DATA = {
 	[GAME_MODE_GLASS] = {
 		name = "Glass Bridge",
-		desc = "Get across the bridge without falling! Only one glass pane is safe in each row. Will you push your luck, or let someone else take the fall?",
+		desc = translate("desc_glass"),
 		level = LEVEL_GLASS,
-		interact = PLAYER_INTERACTIONS_SOLID,
+		interact = PLAYER_INTERACTIONS_NONE,
 		kbStrength = 5,
-		fasterActions = true,
 		music = "dire",
-		marioUpdateFunc = function(m) -- switch to custom falling action
+		marioUpdateFunc = function(m)
 			if
 				m.action & ACT_GROUP_MASK ~= ACT_GROUP_CUTSCENE
 				and m.action ~= ACT_GB_FALL
-				and m.action ~= ACT_SPECTATE
+				and m.action ~= ACT_BUBBLED
 				and m.floor
 				and m.floor.type == SURFACE_DEATH_PLANE
 				and m.vel.y <= -75
@@ -29,7 +28,7 @@ GAME_MODE_DATA = {
 		end,
 		victoryFunc = function(m)
 			if m.action & ACT_FLAG_AIR == 0 and m.floor and m.floor.type == SURFACE_TIMER_END then
-				if gPlayerSyncTable[m.playerIndex].roundScore >= 10 then
+				if gPlayerSyncTable[m.playerIndex].earnedPoints >= 20 then
 					return true
 				elseif m.playerIndex == 0 then
 					play_sound(SOUND_MENU_CAMERA_BUZZ, gGlobalSoundSource)
@@ -40,19 +39,20 @@ GAME_MODE_DATA = {
 			return false
 		end,
 		startingSetup = function()
-			-- spawn thwomps for all players
 			for i = 0, MAX_PLAYERS - 1 do
-				local m = gMarioStates[i]
-				spawn_object_no_rotate(id_bhvGBThwomp, E_MODEL_THWOMP, m.pos.x, m.pos.y + 1000, m.pos.z, function(o)
-					o.oBehParams = i
-				end, false)
+				do
+					local m = gMarioStates[i]
+					spawn_object_no_rotate(id_bhvGBThwomp, E_MODEL_THWOMP, m.pos.x, m.pos.y + 1000, m.pos.z, function(o)
+						o.oBehParams = i
+					end, false)
+				end
+				break
 			end
 		end,
 		allowPvpFunc = function(attacker, victim, interaction)
 			local sAttacker = gPlayerSyncTable[attacker.playerIndex]
 			local sVictim = gPlayerSyncTable[victim.playerIndex]
-
-			if sAttacker.roundScore == 0 or sVictim.roundScore == 0 then
+			if sAttacker.earnedPoints == 0 or sVictim.earnedPoints == 0 then
 				return false
 			end
 		end,
@@ -1173,7 +1173,7 @@ GAME_MODE_DATA = {
 					end
 				end
 
-				add_line_to_table(sideBarLines, ownerName .. " has the lamp", lengthLimit)
+				add_line_to_table(sideBarLines, ownerName .. " \\#ffffff\\has the lamp", lengthLimit)
 			end
 
 			local gIndex = network_global_index_from_local(0)
@@ -1208,7 +1208,7 @@ GAME_MODE_DATA = {
 		kbStrength = 1,
 		music = "dark",
 		roundTime = 900,
-		maxRounds = 3,
+		maxRounds = 10,
 		doEliminationPoints = true,
 		marioUpdateFunc = function(m)
 			m.health = 2176
@@ -1304,7 +1304,7 @@ GAME_MODE_DATA = {
 			local sMario = gPlayerSyncTable[gMarioStates[0].playerIndex]
 			add_line_to_table(
 				sideBarLines,
-				"" .. translate("role") .. murder_instructions_calc(sMario.murderIsSheriff, sMario.murderIsMurderer),
+				"" .. translate("role") .. murder_role_calc(sMario.murderIsSheriff, sMario.murderIsMurderer),
 				lengthLimit
 			)
 			add_line_to_table(
@@ -1700,55 +1700,35 @@ GAME_MODE_DATA = {
 			end
 		end,
 	},
-}
-
-LEVEL_SYNC_SETUP = {
-	[LEVEL_GLASS] = function()
-		local toEliminate = calculate_players_to_eliminate(not gGlobalSyncTable.eliminationMode, true)
-
-		-- assign each pane its break status
-		local glass = obj_get_first_with_behavior_id_and_field_s32(id_bhvGlass, 0x2F, 0)
-		-- the amount of panes can't exceed half we intend to eliminate plus 2, to ensure elimination games don't end really easily
-		local totalPanes = math.max(math.ceil(toEliminate / 2) + 2, 3)
-		local row = 0
-		while glass do
-			if row >= totalPanes then
-				glass.oBobombFuseTimer = 2
-				local otherGlass = obj_get_next_with_same_behavior_id_and_field_s32(glass, 0x2F, row)
-				if otherGlass then
-					otherGlass.oBobombFuseTimer = 2
-				end
-				network_send_object(glass, true)
-				if otherGlass then
-					network_send_object(otherGlass, true)
-				end
-			else
-				local otherGlass = obj_get_next_with_same_behavior_id_and_field_s32(glass, 0x2F, row)
-				local glassBreak = math.random(0, 1)
-				if glassBreak == 0 then
-					glass.oBobombFuseTimer = 0
-					if otherGlass then
-						otherGlass.oBobombFuseTimer = 1
-					end
-				else
-					glass.oBobombFuseTimer = 1
-					if otherGlass then
-						otherGlass.oBobombFuseTimer = 0
-					end
-				end
-				if DEBUG_MODE then
-					log_to_console(tostring(row) .. ": " .. tostring(glassBreak))
-				end
-				network_send_object(glass, true)
-				if otherGlass then
-					network_send_object(otherGlass, true)
-				end
+	[GAME_MODE_BOMB_THROWER] = {
+		name = "Bomb Thrower",
+		desc = translate("desc_bombthrower"),
+		level = LEVEL_BOWSER_1,
+		interact = PLAYER_INTERACTIONS_SOLID,
+		music = "quick",
+		kbStrength = 8,
+		nerfSonic = true,
+		roundTime = 900,
+		maxRounds = 3,
+		doEliminationPoints = true,
+		hostUpdateFunc = function()
+			if gGlobalSyncTable.roundTimer == 899 then
+				spawn_object_no_rotate(id_bhvTenCoinsSpawn, E_MODEL_NONE, 0, 2000, 0, nil, true)
 			end
-
-			row = row + 1
-			glass = obj_get_first_with_behavior_id_and_field_s32(id_bhvGlass, 0x2F, row)
-		end
-	end,
+			local x, y, z = math.random(-2500, 2500), 2000, math.random(-3000, 3000)
+			if gGlobalSyncTable.roundTimer > 150 and gGlobalSyncTable.roundTimer < 240 then
+				spawn_sync_object(id_bhvFallingBomb, E_MODEL_BLACK_BOBOMB, x, y, z, function(o)
+					o.oVelY = math.random(-35, -5)
+					o.oMoveAngleYaw = math.random(0, 65535)
+				end)
+			elseif gGlobalSyncTable.roundTimer > 510 and gGlobalSyncTable.roundTimer < 720 then
+				spawn_sync_object(id_bhvFallingBomb, E_MODEL_BLACK_BOBOMB, x, y, z, function(o)
+					o.oVelY = math.random(-35, -5)
+					o.oMoveAngleYaw = math.random(0, 65535)
+				end)
+			end
+		end,
+	},
 }
 
 LEVEL_SPAWN_DATA = {
