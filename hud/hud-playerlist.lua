@@ -153,7 +153,12 @@ function M.render_playerlist()
 	local screenH = djui_hud_get_screen_height()
 
 	local width = screenW * 0.5
-	local height = screenH * 0.6
+	local count = network_player_connected_count()
+	local rowSpacing = 28
+	local headerHeight = 95
+	local bottomPadding = 25
+
+	local height = headerHeight + (count * rowSpacing) + bottomPadding
 
 	local x = (screenW - width) / 2
 
