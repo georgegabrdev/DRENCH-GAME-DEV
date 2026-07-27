@@ -403,35 +403,122 @@ local defaultColorData = {
 	},
 }
 
+if not _G.csColorData then
+	_G.csColorData = {}
+end
+
 function HU.render_player_head(index, x, y, scale)
 	local m = gMarioStates[index]
 	local np = gNetworkPlayers[index]
 
-	local data = defaultColorData[m.character.type]
+	local thisIconColorData = defaultColorData[m.character.type]
+	local noColorHead = false
 
-	if not data then
+	if not thisIconColorData then
+		noColorHead = true
 		djui_hud_set_color(255, 255, 255, 255)
 		djui_hud_render_texture(m.character.hudHeadTexture, x, y, scale, scale)
+	elseif _G.charSelectExists then
+		local charNum = _G.charSelect.character_get_current_number(index) or 0
+		local costume = _G.charSelect.character_get_current_costume(index) or 1
+
+		thisIconColorData = _G.csColorData[charNum]
+		if thisIconColorData then
+			if thisIconColorData[1] then
+				thisIconColorData = thisIconColorData[costume] or thisIconColorData[1]
+			end
+		else
+			local charTable = _G.charSelect.character_get_full_table()[charNum]
+			thisIconColorData = charTable and _G.csColorData[charTable.nickname or charTable.saveName]
+		end
+
+		if not thisIconColorData then
+			local tex = _G.charSelect.character_get_life_icon(index) or "?"
+			local isVanilla = true
+
+			if _G.charSelect.character_is_vanilla then
+				isVanilla = _G.charSelect.character_is_vanilla(charNum) and (costume == 1)
+			else
+				isVanilla = (charNum == 1) and (costume == 1)
+			end
+
+			if not isVanilla then
+				if _G.charSelect.render_life_icon_from_local_index then
+					_G.charSelect.render_life_icon_from_local_index(index)
+				elseif type(tex) == "string" then
+					djui_hud_set_font(FONT_RECOLOR_HUD)
+					local charTable = _G.charSelect.character_get_current_table(nil, costume)
+					local color = { r = 255, g = 255, b = 255 }
+					if charTable then
+						color = charTable.color or color
+					end
+					djui_hud_set_color(color.r, color.g, color.b, 255)
+					djui_hud_print_text(tex, x, y, scale)
+				else
+					djui_hud_set_color(255, 255, 255, 255)
+					local sX = scale / (tex.width * 0.0625)
+					local sY = scale / (tex.width * 0.0625)
+					djui_hud_render_texture(tex, x, y, sX, sY)
+				end
+				noColorHead = true
+			else
+				thisIconColorData = defaultColorData[m.character.type]
+			end
+		end
+	end
+
+	if noColorHead then
 		return
 	end
 
-	local tex = data.tex
-	local order = data.order
+	local tex = thisIconColorData.tex
+	local headWidth = thisIconColorData.headWidth or 16
+	local headHeight = thisIconColorData.headHeight or 16
 
-	for i = 0, #order - 1 do
-		local part = order[i + 1]
+	local order = thisIconColorData.order or { SKIN, HAIR, CAP, FEATURE, FEATURE, NONE }
 
-		if part ~= NONE then
-			local color = { r = 255, g = 255, b = 255 }
+	if m.marioBodyState.modelState & MODEL_STATE_METAL ~= 0 then
+		local color = network_player_get_override_palette_color(np, METAL)
+		djui_hud_set_color(color.r, color.g, color.b, 255)
 
-			if part ~= FEATURE then
-				color = network_player_get_override_palette_color(np, part)
+		local sheetX = thisIconColorData.metal_sheet_x or #order
+		djui_hud_render_texture_tile(tex, x, y, scale, scale, sheetX * headWidth, 0, headWidth, headHeight)
+	else
+		local totalX = tex.width // headWidth - 1
+		local orderX = 0
+		local sheetX = 0
+
+		while sheetX < totalX do
+			local metalSheetX = thisIconColorData.metal_sheet_x or #order
+			local metalCaplessSheetX = thisIconColorData.metal_capless_sheet_x or (#order + 1)
+
+			if sheetX ~= metalSheetX and sheetX ~= metalCaplessSheetX then
+				orderX = orderX + 1
+
+				local part = order[orderX]
+				if part == nil then
+					break
+				end
+
+				if part ~= NONE then
+					local color = { r = 255, g = 255, b = 255 }
+
+					if part ~= FEATURE then
+						color = network_player_get_override_palette_color(np, part)
+					end
+
+					djui_hud_set_color(color.r, color.g, color.b, 255)
+					djui_hud_render_texture_tile(tex, x, y, scale, scale, sheetX * headWidth, 0, headWidth, headHeight)
+				end
 			end
 
-			djui_hud_set_color(color.r, color.g, color.b, 255)
-
-			djui_hud_render_texture_tile(tex, x, y, scale, scale, i * 16, 0, 16, 16)
+			sheetX = sheetX + 1
 		end
+	end
+
+	if m.marioBodyState.capState == MARIO_HAS_WING_CAP_ON then
+		djui_hud_set_color(255, 255, 255, 255)
+		djui_hud_render_texture(HU.WING_HUD, x, y, scale, scale)
 	end
 end
 
@@ -447,20 +534,16 @@ function HU.render_player_head_interpolated(index, prevX, prevY, x, y, scaleX, s
 	local np = gNetworkPlayers[index]
 
 	local alpha = alpha_ or 255
-
-	-- vanish effect (engine-based only)
 	if
 		not noSpecial
 		and (m.marioBodyState.modelState & MODEL_STATE_NOISE_ALPHA) ~= 0
 		and (index == 0 or np.fadeOpacity >= 32)
 	then
-		alpha = math.max(alpha - 155, 0)
+		alpha = math.max(alpha - 155, 0) -- vanish effect
 	end
 
 	local thisIconColorData = defaultColorData[m.character.type]
 	local noColorHead = false
-
-	-- fallback: render raw head texture
 	if not thisIconColorData then
 		noColorHead = true
 		djui_hud_set_color(255, 255, 255, alpha)
@@ -475,6 +558,51 @@ function HU.render_player_head_interpolated(index, prevX, prevY, x, y, scaleX, s
 			scaleX,
 			scaleY
 		)
+	elseif _G.charSelectExists then
+		local charNum = _G.charSelect.character_get_current_number(index) or 0
+		local costume = _G.charSelect.character_get_current_costume(index) or 1
+		thisIconColorData = _G.csColorData[charNum]
+		if thisIconColorData then
+			if thisIconColorData[1] then
+				thisIconColorData = thisIconColorData[costume] or thisIconColorData[1]
+			end
+		else
+			local charTable = _G.charSelect.character_get_full_table()[charNum]
+			thisIconColorData = charTable and _G.csColorData[charTable.nickname or charTable.saveName]
+		end
+
+		if not thisIconColorData then
+			local tex = _G.charSelect.character_get_life_icon(index) or "?"
+			local isVanilla = true
+			if _G.charSelect.character_is_vanilla then
+				isVanilla = _G.charSelect.character_is_vanilla(charNum) and (costume == 1)
+			else
+				isVanilla = (charNum == 1) and (costume == 1)
+			end
+
+			if not isVanilla then
+				if _G.charSelect.render_life_icon_from_local_index then
+					_G.charSelect.render_life_icon_from_local_index(index)
+				elseif type(tex) == "string" then
+					djui_hud_set_font(FONT_RECOLOR_HUD)
+					local charTable = _G.charSelect.character_get_current_table(nil, costume)
+					local color = { r = 255, g = 255, b = 255 }
+					if charTable then
+						color = charTable.color or color
+					end
+					djui_hud_set_color(color.r, color.g, color.b, alpha)
+					djui_hud_print_text_interpolated(tex, prevX, prevY, scaleX, x, y, scaleX)
+				else
+					djui_hud_set_color(255, 255, 255, alpha)
+					local sX = scaleX / (tex.width * 0.0625)
+					local sY = scaleY / (tex.width * 0.0625)
+					djui_hud_render_texture_interpolated(tex, prevX, prevY, sX, sY, x, y, sX, sY)
+				end
+				noColorHead = true
+			else
+				thisIconColorData = defaultColorData[m.character.type]
+			end
+		end
 	end
 
 	local isMetal = false
@@ -484,10 +612,8 @@ function HU.render_player_head_interpolated(index, prevX, prevY, x, y, scaleX, s
 		local tex = thisIconColorData.tex
 		local headWidth = thisIconColorData.headWidth or 16
 		local headHeight = thisIconColorData.headHeight or 16
-
 		local totalX = tex.width // headWidth - 1
 		local order = thisIconColorData.order or { SKIN, HAIR, CAP, FEATURE, FEATURE, NONE }
-
 		if
 			not (noSpecial or alwaysCap)
 			and m.marioBodyState.capState == MARIO_HAS_DEFAULT_CAP_OFF
@@ -497,8 +623,7 @@ function HU.render_player_head_interpolated(index, prevX, prevY, x, y, scaleX, s
 			order = thisIconColorData.order_capless
 		end
 
-		-- METAL CAP RENDER
-		if (not noSpecial) and (m.marioBodyState.modelState & MODEL_STATE_METAL) ~= 0 then
+		if (not noSpecial) and (m.marioBodyState.modelState & MODEL_STATE_METAL) ~= 0 then -- metal
 			local color = network_player_get_override_palette_color(np, METAL)
 			djui_hud_set_color(color.r, color.g, color.b, alpha)
 			isMetal = true
@@ -507,7 +632,6 @@ function HU.render_player_head_interpolated(index, prevX, prevY, x, y, scaleX, s
 			if capless then
 				sheetX = thisIconColorData.metal_capless_sheet_x or (#order + 1)
 			end
-
 			djui_hud_render_texture_tile_interpolated(
 				tex,
 				prevX,
@@ -524,29 +648,22 @@ function HU.render_player_head_interpolated(index, prevX, prevY, x, y, scaleX, s
 				headHeight
 			)
 		else
-			-- NORMAL COLORED HEAD RENDER
 			local orderX = 0
 			local sheetX = 0
-
 			while sheetX < totalX do
 				local metalSheetX = thisIconColorData.metal_sheet_x or #order
 				local metalCaplessSheetX = thisIconColorData.metal_capless_sheet_x or (#order + 1)
-
 				if sheetX ~= metalSheetX and sheetX ~= metalCaplessSheetX then
 					orderX = orderX + 1
+					local color = { r = 255, g = 255, b = 255 }
 					local part = order[orderX]
-
 					if part == nil then
 						break
 					end
-
 					if part ~= NONE then
-						local color = { r = 255, g = 255, b = 255 }
-
 						if part ~= FEATURE then
 							color = network_player_get_override_palette_color(np, part)
 						end
-
 						djui_hud_set_color(color.r, color.g, color.b, alpha)
 						djui_hud_render_texture_tile_interpolated(
 							tex,
@@ -565,21 +682,17 @@ function HU.render_player_head_interpolated(index, prevX, prevY, x, y, scaleX, s
 						)
 					end
 				end
-
 				sheetX = sheetX + 1
 			end
 		end
 	end
 
-	-- WING CAP (engine-only)
 	if (not noSpecial) and m.marioBodyState.capState == MARIO_HAS_WING_CAP_ON then
 		djui_hud_set_color(255, 255, 255, alpha)
-
 		if (not noColorHead) and isMetal then
-			djui_hud_set_color(109, 170, 173, alpha)
+			djui_hud_set_color(109, 170, 173, alpha) -- blueish green
 		end
-
-		djui_hud_render_texture_interpolated(HU.WING_HUD, prevX, prevY, scaleX, scaleY, x, y, scaleX, scaleY)
+		djui_hud_render_texture_interpolated(HU.WING_HUD, prevX, prevY, scaleX, scaleY, x, y, scaleX, scaleY) -- wing
 	end
 end
 

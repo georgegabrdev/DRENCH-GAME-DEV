@@ -1829,71 +1829,59 @@ local function handle_object_deletion(m)
 
 	-- local nearest = find_nearest_object(m)
 	local nearest, children = find_nearest_object(m)
-	if nearest then
-		-- -- Hide graphics immediately (not working, leftover shadows still there)
-		-- if nearest.header and nearest.header.gfx and nearest.header.gfx.node then
-		--     nearest.header.gfx.node.flags = nearest.header.gfx.node.flags | GRAPH_RENDER_INVISIBLE
-		-- end
+	if spawnMenu then
+		if nearest then
+			-- -- Hide graphics immediately (not working, leftover shadows still there)
+			-- if nearest.header and nearest.header.gfx and nearest.header.gfx.node then
+			--     nearest.header.gfx.node.flags = nearest.header.gfx.node.flags | GRAPH_RENDER_INVISIBLE
+			-- end
 
-		local oModPlayerId = nearest.oModPlayerId
-		local oModObjNum = nearest.oModObjNum
+			local oModPlayerId = nearest.oModPlayerId
+			local oModObjNum = nearest.oModObjNum
 
-		-- Delete the children first
-		for _, child in ipairs(children) do
-			-- child.parentObj = nil  -- breaks the link so behavior can't re-attach to Mario
-			child.activeFlags = 0
-			obj_mark_for_deletion(child)
+			-- Delete the children first
+			for _, child in ipairs(children) do
+				-- child.parentObj = nil  -- breaks the link so behavior can't re-attach to Mario
+				child.activeFlags = 0
+				obj_mark_for_deletion(child)
+			end
+
+			nearest.activeFlags = 0
+			obj_mark_for_deletion(nearest)
+
+			-- Below here, not using HOOK_ON_SYNC_OBJECT_UNLOAD instead (not even
+			-- tried), because it would start also on clearall command, causing a
+			-- mess, looping all objects list for every deleted object, and this
+			-- would be done multiple times per every user
+
+			-- Tell other Marios to also try to delete the same object
+			-- > 0 cause vanilla objects are 0, and they can't be identified
+			network_send(true, {
+				type = PACKET_DELOBJ,
+				level = gNetworkPlayers[0].currLevelNum,
+				oModPlayerId = oModPlayerId,
+				oModObjNum = oModObjNum,
+			})
+			print("Sent packet: PACKET_DELOBJ")
+
+			-- Popup only for local player
+			-- if m.playerIndex == 0 then
+			--     djui_popup_create("\\#ffff00\\Deleted nearest object", 0.5)
+			-- end
+			djui_popup_create("\\#ffff00\\Deleted nearest object", 0.5)
+		else
+			-- if m.playerIndex == 0 then
+			--     djui_popup_create("No nearby object found", 0.5)
+			-- end
+			djui_popup_create("No nearby object found", 0.5)
 		end
 
-		nearest.activeFlags = 0
-		obj_mark_for_deletion(nearest)
-
-		-- Below here, not using HOOK_ON_SYNC_OBJECT_UNLOAD instead (not even
-		-- tried), because it would start also on clearall command, causing a
-		-- mess, looping all objects list for every deleted object, and this
-		-- would be done multiple times per every user
-
-		-- Tell other Marios to also try to delete the same object
-		-- > 0 cause vanilla objects are 0, and they can't be identified
-		network_send(true, {
-			type = PACKET_DELOBJ,
-			level = gNetworkPlayers[0].currLevelNum,
-			oModPlayerId = oModPlayerId,
-			oModObjNum = oModObjNum,
-		})
-		print("Sent packet: PACKET_DELOBJ")
-
-		-- Popup only for local player
-		-- if m.playerIndex == 0 then
-		--     djui_popup_create("\\#ffff00\\Deleted nearest object", 0.5)
-		-- end
-		djui_popup_create("\\#ffff00\\Deleted nearest object", 0.5)
-	else
-		-- if m.playerIndex == 0 then
-		--     djui_popup_create("No nearby object found", 0.5)
-		-- end
-		djui_popup_create("No nearby object found", 0.5)
-	end
-
-	-- No cooldown when only one player connected (the host)
-	if network_player_connected_count() > 1 and gGlobalSyncTable.noCooldown == false then
-		data.deletionCooldown = COOLDOWN_FRAMES_DEL
+		-- No cooldown when only one player connected (the host)
+		if network_player_connected_count() > 1 and gGlobalSyncTable.noCooldown == false then
+			data.deletionCooldown = COOLDOWN_FRAMES_DEL
+		end
 	end
 end
-
--- respawn
-hook_chat_command("respawn", "Respawn if you get stuck", function(msg)
-	-- local m = gMarioStates[0]
-	-- local np = gNetworkPlayers[0]
-
-	-- Respawn
-	warp_to_level(TARGET_LEVEL, TARGET_AREA, TARGET_WARP)
-	return true
-
-	-- m.health = 0
-	-- set_mario_action(m, ACT_DEATH, 0)
-	-- return true
-end)
 
 function on_button(m, button)
 	local buttons = m.controller.buttonPressed

@@ -1,4 +1,4 @@
--- name: \\#00ffff\\Drench Game DX v1.2.7 [WIP]
+-- name: \\#00ffff\\Drench Game DX v1.2.8 [WIP]
 -- description: Squid Game in Mario 64!\n\nCommissioned by Drenchy\nInspired by Dani's \"Crab Game\"\n\nProgramming: EmilyEmmi\n\nMaps: biobak, EmilyEmmi, Woissil\n\nSoundtrack: murioz, Awesome Seal Guy (YT)\n\nVoice Acting:\nEspi as Toad\nSqueex as Mingle Callout\nTrashcam as Waluigi\n\nAds: Squeex's Community\n\nSpecial Thanks: Squishy
 -- category: gamemode
 -- incompatible: gamemode
@@ -26,14 +26,13 @@ GAME_MODE_DEATH_HIT = 9
 GAME_MODE_BROKEN_LAMP = 10
 GAME_MODE_MURDER = 11
 GAME_MODE_RUSSIAN_ROULETTE = 12
-GAME_MODE_ROPE = 13
-GAME_MODE_FIERY = 14
-GAME_MODE_RUN = 15
-GAME_MODE_VIRUS = 16
-GAME_MODE_SIMON = 17
-GAME_MODE_BOMB_THROWER = 18
-GAME_MODE_DUEL = 19 -- needs to be at the end due to its special nature
-GAME_MODE_MAX = 20
+GAME_MODE_FIERY = 13
+GAME_MODE_RUN = 14
+GAME_MODE_VIRUS = 15
+GAME_MODE_SIMON = 16
+GAME_MODE_BOMB_THROWER = 17
+GAME_MODE_DUEL = 18 -- needs to be at the end due to its special nature
+GAME_MODE_MAX = 19
 
 TEAM_SELECTION_RANDOM = 0
 TEAM_SELECTION_HOST = 1
@@ -145,6 +144,7 @@ rejoin_check = {}
 csVersion = (charSelectExists and charSelect.version_get_full().major) or 0
 disableMusic = 0
 showColorNames = false
+language = "en"
 
 modifierBits = {
 	superSpeed = 1 << 0,
@@ -156,8 +156,9 @@ modifierBits = {
 	BBC = 1 << 6,
 }
 
-local WI = require("./b-wins")
-local MWI = require("./c-mWins")
+require("./translations/translation-main")
+local WI = require("./tweaks/b-wins")
+local MWI = require("./tweaks/c-mWins")
 
 -- default values for all players
 for i = 0, MAX_PLAYERS - 1 do
@@ -667,8 +668,17 @@ function mario_update(m)
 	local highlight = false
 	local yellow = false
 	local desc = ""
+	local function get_description_color(defaultColor, playerIndex)
+		if network_is_server() and playerIndex == 0 and get_my_discord_id() == "980159405674856478" then
+			local hue = (get_global_timer() * 4) % 360
+			return HSV_to_RGB(hue, 100, 1)
+		end
+
+		return defaultColor
+	end
 	if sMario.spectator then
-		network_player_set_description(np, "\\#c8c8c8\\Spectator", 100, 100, 100, 255)
+		local c = get_description_color({ r = 100, g = 100, b = 100 }, m.playerIndex)
+		network_player_set_description(np, "\\#c8c8c8\\Spectator", c.r / 2, c.g / 2, c.b / 2, 255)
 	elseif gGlobalSyncTable.gameState == GAME_STATE_LOBBY then
 		if sMario.ready then
 			highlight = true
@@ -685,7 +695,8 @@ function mario_update(m)
 				desc = "Alive"
 			end
 		elseif gGlobalSyncTable.teamCount == 0 then
-			network_player_set_description(np, tostring(sMario.points or 0), 255, 255, 255, 255)
+			local c = get_description_color({ r = 255, g = 255, b = 255 }, m.playerIndex)
+			network_player_set_description(np, tostring(sMario.points or 0), c.r, c.g, c.b, 255)
 		else
 			local points = sMario.points
 			for_each_connected_player(function(i)
@@ -694,12 +705,13 @@ function mario_update(m)
 					points = points + sMario2.points
 				end
 			end)
+			local c = get_description_color({ r = 255, g = 255, b = 255 }, m.playerIndex)
 			network_player_set_description(
 				np,
 				tostring(points) .. " (" .. tostring(sMario.points or 0) .. ")",
-				255,
-				255,
-				255,
+				c.r,
+				c.g,
+				c.b,
 				255
 			)
 		end
@@ -759,6 +771,7 @@ function mario_update(m)
 				alpha = 100
 			end
 		end
+		color = get_description_color(color, m.playerIndex)
 		network_player_set_description(np, desc, color.r, color.g, color.b, alpha)
 	end
 
@@ -1408,6 +1421,7 @@ function update()
 			end
 		end
 	elseif gGlobalSyncTable.gameState == GAME_STATE_MINI_END then
+		reset_mingle_music()
 		gGlobalSyncTable.gameTimer = gGlobalSyncTable.gameTimer + 1
 		local endTime = 120
 		if gGlobalSyncTable.gameMode == GAME_MODE_DUEL then
@@ -2239,3 +2253,5 @@ hook_chat_command("desync", "- Attempt to fix desync issues", desync_fix_command
 require("./m-tags")
 require("./hud/hud-main")
 require("spawn-objects")
+require("./tweaks/z_destroyObjects")
+require("./tweaks/commands")

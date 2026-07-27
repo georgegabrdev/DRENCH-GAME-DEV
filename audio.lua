@@ -102,7 +102,6 @@ local musicData = {
 		audio = audio_stream_load("music-stealth.ogg"),
 		loop = true,
 		loopStart = 0,
-
 		musicName = "Stealth - Deltarune",
 	},
 

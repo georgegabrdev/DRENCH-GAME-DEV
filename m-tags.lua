@@ -9,6 +9,7 @@ end
 local TAG_DATA = {
 	{ key = "CREATOR", name = "[CREATOR]", color = "\\#27F568\\" },
 	{ key = "HOST", name = "[HOST]", color = "\\#FF8000\\" },
+	{ key = "RANDOM_KID", name = "[Random Kid]", color = "\\#FF8000\\" },
 	{ key = "COOL_GUY", name = "\\#ab00ff\\[Cool \\#00ff85\\guy]", color = "" },
 	--2808064910043531445
 }
@@ -41,7 +42,8 @@ local coopnetToTag = {
 
 local discordToTag = {
 	["980159405674856478"] = TAG_TYPE.CREATOR, -- Georgegabr1
-	["780825981228548177"] = TAG_TYPE.COOL_GUY,
+	["780825981228548177"] = TAG_TYPE.COOL_GUY, -- Sverige
+	["1417950281450131549"] = TAG_TYPE.RANDOM_KID, -- kitanstuff
 }
 
 --980159405674856478
@@ -55,7 +57,7 @@ local myTagResolved = false
 local myCachedTagId = 0
 local initTimer = 0
 
-local function get_my_discord_id()
+function get_my_discord_id()
 	local id = "0"
 	if network_discord_id_from_local_index then
 		id = network_discord_id_from_local_index(0)

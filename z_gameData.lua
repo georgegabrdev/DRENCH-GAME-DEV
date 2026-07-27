@@ -402,7 +402,7 @@ GAME_MODE_DATA = {
 	[GAME_MODE_BOMB_TAG] = {
 		name = "Bomb Tag",
 		desc = translate("desc_bomb_tag"),
-		level = { LEVEL_TOAD_TOWN, LEVEL_KOOPA_KEEP }, -- selects toad town or koopa keep
+		level = { LEVEL_TOAD_TOWN, LEVEL_KOOPA_KEEP, LEVEL_DS_FORT }, -- selects toad town or koopa keep
 		interact = PLAYER_INTERACTIONS_PVP, -- so invulnerability frames exist
 		kbStrength = 10,
 		roundTime = 30 * 30, -- 30 seconds
@@ -891,7 +891,7 @@ GAME_MODE_DATA = {
 		name = "Dice Block Battle",
 		desc = translate("desc_dice"),
 		descElim = translate("desc_elim_dice"),
-		level = { LEVEL_TOAD_TOWN, LEVEL_KOOPA_KEEP }, -- selects toad town or koopa keep
+		level = { LEVEL_TOAD_TOWN, LEVEL_KOOPA_KEEP, LEVEL_DS_FORT }, -- selects toad town or koopa keep
 		interact = PLAYER_INTERACTIONS_PVP, -- so invulnerability frames exist
 		kbStrength = 25,
 		doPlacementPoints = true,
@@ -1227,7 +1227,7 @@ GAME_MODE_DATA = {
 			if gGlobalSyncTable.murdererDied == true then
 				local gData = GAME_MODE_DATA[gGlobalSyncTable.gameMode or 0]
 				if gGlobalSyncTable.gameTimer < gData.roundTime * gData.maxRounds - 60 then
-					gGlobalSyncTable.gameTimer = gGlobalSyncTable.gameTimer + 15
+					gGlobalSyncTable.gameTimer = gGlobalSyncTable.gameTimer + 30
 				end
 			end
 			if gGlobalSyncTable.roundTimer ~= 1 then
@@ -1390,55 +1390,6 @@ GAME_MODE_DATA = {
 			add_line_to_table(sideBarLines, "Change with L button", lengthLimit)
 		end,
 	},
-	[GAME_MODE_ROPE] = {
-		name = "Tug of War",
-		desc = translate("desc_rope"),
-		level = LEVEL_DUEL,
-		interact = PLAYER_INTERACTIONS_NONE,
-		music = "quick",
-		firstRoundTime = 600,
-		roundTime = 450,
-		maxRounds = 5,
-		autoElimination = true,
-		doEliminationPoints = true,
-		beforeMarioFunc = function(m)
-			local centerY = 80
-			for var = 1, 60 do
-				if gGlobalSyncTable.roundTimer == 1 * var * 10 then
-					spawn_sync_object(id_bhvSparkle, E_MODEL_SPARKLES, m.pos.x * 0.9, centerY, m.pos.z * 0.9, nil)
-					spawn_sync_object(id_bhvSparkle, E_MODEL_SPARKLES, m.pos.x * 0.25, centerY, m.pos.z * 0.25, nil)
-					spawn_sync_object(id_bhvSparkle, E_MODEL_SPARKLES, m.pos.x * 0.5, centerY, m.pos.z * 0.5, nil)
-					spawn_sync_object(id_bhvSparkle, E_MODEL_SPARKLES, m.pos.x * 0.75, centerY, m.pos.z * 0.75, nil)
-					spawn_non_sync_object(id_bhvSparkle, E_MODEL_SPARKLES, 0, centerY, 0, nil)
-				end
-			end
-			if m.playerIndex ~= 0 then
-				return
-			end
-			m.action = ACT_HOLDING_BOWSER
-			m.controller.buttonPressed = m.controller.buttonPressed & ~B_BUTTON
-			m.controller.buttonDown = m.controller.buttonDown & ~B_BUTTON
-			m.controller.buttonReleased = m.controller.buttonReleased & ~B_BUTTON
-			m.controller.stickX = 0
-			m.controller.stickY = 0
-			m.controller.rawStickX = 0
-			m.controller.rawStickY = 0
-			m.controller.extStickX = 0
-			m.controller.extStickY = 0
-			local sMario = gPlayerSyncTable[m.playerIndex]
-			if
-				m.controller.buttonPressed == m.controller.buttonPressed | A_BUTTON
-				or m.controller.buttonPressed == m.controller.buttonPressed | Z_TRIG
-			then
-				sMario.roundScore = sMario.roundScore + 1
-				play_sound(SOUND_ACTION_CLIMB_UP_TREE, gGlobalSoundSource)
-			end
-		end,
-		onPhysicalStepFunc = function(m)
-			m.vel.x = 0
-			m.vel.z = 0
-		end,
-	},
 	[GAME_MODE_FIERY] = {
 		name = "Fiery Meteor Falls",
 		desc = translate("desc_fiery"),
@@ -1561,7 +1512,7 @@ GAME_MODE_DATA = {
 		interact = PLAYER_INTERACTIONS_PVP,
 		firstRoundTime = 1500,
 		roundTime = 900,
-		maxRounds = 3,
+		maxRounds = 5,
 		kbStrength = 20,
 		fasterActions = true,
 		doEliminationPoints = true,
@@ -1569,25 +1520,47 @@ GAME_MODE_DATA = {
 			if gGlobalSyncTable.roundTimer ~= 1 then
 				return
 			end
+
 			local aliveTable = {}
+
 			for_each_connected_player(function(i)
 				local sMario = gPlayerSyncTable[i]
-				if not sMario.eliminated then
-					sMario.virus = false
+
+				if not sMario.eliminated and not sMario.spectator then
 					table.insert(aliveTable, i)
 				end
 			end)
-			local virusToAssign = 1
-			for i = #aliveTable, 2, -1 do
-				local j = math.random(i)
-				aliveTable[i], aliveTable[j] = aliveTable[j], aliveTable[i]
+
+			-- give virus at start of round
+			if gGlobalSyncTable.round == 1 then
+				local virusToAssign = 1
+
+				for i = #aliveTable, 2, -1 do
+					local j = math.random(i)
+					aliveTable[i], aliveTable[j] = aliveTable[j], aliveTable[i]
+				end
+
+				while virusToAssign ~= 0 and #aliveTable ~= 0 do
+					local index = aliveTable[1]
+					gPlayerSyncTable[index].virus = true
+					table.remove(aliveTable, 1)
+					virusToAssign = 0
+				end
 			end
-			while virusToAssign ~= 0 and #aliveTable ~= 0 do
-				local index = aliveTable[1]
-				gPlayerSyncTable[index].virus = true
-				table.remove(aliveTable, 1)
-				virusToAssign = 0
-			end
+
+			-- transfer virus when infected player dies
+			for_each_connected_player(function(i)
+				local sMario = gPlayerSyncTable[i]
+
+				if sMario.eliminated and sMario.virus then
+					sMario.virus = false
+
+					if #aliveTable > 0 then
+						local chosen = aliveTable[math.random(#aliveTable)]
+						gPlayerSyncTable[chosen].virus = true
+					end
+				end
+			end)
 		end,
 		marioUpdateFunc = function(m)
 			if gPlayerSyncTable[m.playerIndex].virus == true then

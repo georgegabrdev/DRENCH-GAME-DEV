@@ -1167,3 +1167,96 @@ function if_then_else(cond, if_true, if_false)
 	end
 	return if_false
 end
+
+function find_HSL_hue(color)
+	local R = color.r / 255
+	local G = color.g / 255
+	local B = color.b / 255
+	local cMax = math.max(R, G, B)
+	local cMin = math.min(R, G, B)
+	local tri = cMax - cMin
+	local H = 0
+	if tri == 0 then
+		return 0
+	elseif cMax == R then
+		H = 60 * (((G - B) / tri) % 6)
+	elseif cMax == G then
+		H = 60 * (((B - R) / tri) + 2)
+	elseif cMax == B then
+		H = 60 * (((R - G) / tri) + 4)
+	end
+	return H
+end
+function find_HSV_hue(color)
+	return find_HSL_hue(color)
+end
+function find_HSL_saturation(color)
+	local cMax = math.max(color.r / 255, color.g / 255, color.b / 255)
+	local cMin = math.min(color.r / 255, color.g / 255, color.b / 255)
+	local tri = cMax - cMin
+	if tri == 0 then
+		return 0
+	end
+	local lightness = (cMax + cMin) / 2
+	return 100 * tri / (1 - math.abs(2 * lightness - 1))
+end
+function find_HSV_saturation(color)
+	local cMax = math.max(color.r / 255, color.g / 255, color.b / 255)
+	if cMax == 0 then
+		return 0
+	end
+	local cMin = math.min(color.r / 255, color.g / 255, color.b / 255)
+	return 100 * (cMax - cMin) / cMax
+end
+function find_HSL_lightness(color)
+	local cMax = math.max(color.r / 255, color.g / 255, color.b / 255)
+	local cMin = math.min(color.r / 255, color.g / 255, color.b / 255)
+	local lightness = (cMax + cMin) / 2
+	return lightness
+end
+function find_HSV_value(color)
+	local cMax = math.max(color.r / 255, color.g / 255, color.b / 255)
+	local cMin = math.min(color.r / 255, color.g / 255, color.b / 255)
+	local lightness = (cMax + cMin) / 2
+	return cMax
+end
+function HSL_to_RGB(H, saturation, L)
+	local S = saturation / 100
+	local C = (1 - math.abs(2 * L - 1)) * S
+	local X = C * (1 - math.abs((H / 60) % 2 - 1))
+	local m = L - C / 2
+	if H < 60 then
+		return { r = math.floor(255 * (m + C)), g = math.floor(255 * (m + X)), b = math.floor(255 * (m + 0)) }
+	elseif H < 120 then
+		return { r = math.floor(255 * (m + X)), g = math.floor(255 * (m + C)), b = math.floor(255 * (m + 0)) }
+	elseif H < 180 then
+		return { r = math.floor(255 * (m + 0)), g = math.floor(255 * (m + C)), b = math.floor(255 * (m + X)) }
+	elseif H < 240 then
+		return { r = math.floor(255 * (m + 0)), g = math.floor(255 * (m + X)), b = math.floor(255 * (m + C)) }
+	elseif H < 300 then
+		return { r = math.floor(255 * (m + X)), g = math.floor(255 * (m + 0)), b = math.floor(255 * (m + C)) }
+	elseif H < 360 then
+		return { r = math.floor(255 * (m + C)), g = math.floor(255 * (m + 0)), b = math.floor(255 * (m + X)) }
+	end
+	return { r = 255, g = 255, b = 255 }
+end
+function HSV_to_RGB(H, saturation, V)
+	local S = saturation / 100
+	local C = V * S
+	local X = C * (1 - math.abs((H / 60) % 2 - 1))
+	local m = V - C
+	if H < 60 then
+		return { r = math.floor(255 * (m + C)), g = math.floor(255 * (m + X)), b = math.floor(255 * (m + 0)) }
+	elseif H < 120 then
+		return { r = math.floor(255 * (m + X)), g = math.floor(255 * (m + C)), b = math.floor(255 * (m + 0)) }
+	elseif H < 180 then
+		return { r = math.floor(255 * (m + 0)), g = math.floor(255 * (m + C)), b = math.floor(255 * (m + X)) }
+	elseif H < 240 then
+		return { r = math.floor(255 * (m + 0)), g = math.floor(255 * (m + X)), b = math.floor(255 * (m + C)) }
+	elseif H < 300 then
+		return { r = math.floor(255 * (m + X)), g = math.floor(255 * (m + 0)), b = math.floor(255 * (m + C)) }
+	elseif H < 360 then
+		return { r = math.floor(255 * (m + C)), g = math.floor(255 * (m + 0)), b = math.floor(255 * (m + X)) }
+	end
+	return { r = 255, g = 255, b = 255 }
+end

@@ -1,5 +1,5 @@
-local WI = require("./b-wins")
-local MWI = require("./c-mWins")
+local WI = require("b-wins")
+local MWI = require("c-mWins")
 
 function on_chat_message(msg)
 	WI.reset_wins()

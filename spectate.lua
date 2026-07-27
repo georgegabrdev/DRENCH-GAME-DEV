@@ -3,6 +3,7 @@ ACT_SPECTATE = ACT_BUBBLED -- replace bubbled action so it doesn't do syncing
 ACT_FREECAM = allocate_mario_action(ACT_GROUP_AIRBORNE | ACT_FLAG_INVULNERABLE)
 
 spectatedPlayer = 0
+spectateStar = false
 local lastDir = 0
 local lastDirTime = 0
 
@@ -122,6 +123,10 @@ local function act_freecam(m)
 	camera_freeze()
 end
 
+local function find_steal_star()
+	return obj_get_first_with_behavior_id(id_bhvStealStar)
+end
+
 function act_spectate(m)
 	m.marioObj.header.gfx.node.flags = m.marioObj.header.gfx.node.flags | GRAPH_RENDER_INVISIBLE
 	m.health = 0x880
@@ -178,24 +183,44 @@ function act_spectate(m)
 	lastDirTime = lastDirTime + 1
 
 	if change ~= 0 then
-		-- get first spectatable player after change
-		local limit = 0
-		while limit < MAX_PLAYERS do
-			spectatedPlayer = (spectatedPlayer + change) % MAX_PLAYERS
-			limit = limit + 1
-			specM = gMarioStates[spectatedPlayer]
-			if spectatedPlayer ~= 0 and is_player_active(specM) ~= 0 then
-				break
-			elseif limit >= MAX_PLAYERS then
-				return
+		if spectateStar then
+			spectateStar = false
+			spectatedPlayer = 1
+		else
+			local found = false
+
+			for i = 1, MAX_PLAYERS do
+				spectatedPlayer = (spectatedPlayer + change) % MAX_PLAYERS
+
+				local specM = gMarioStates[spectatedPlayer]
+				if spectatedPlayer ~= 0 and is_player_active(specM) ~= 0 then
+					found = true
+					break
+				end
+			end
+
+			if not found and find_steal_star() ~= nil then
+				spectateStar = true
 			end
 		end
 	end
 
 	-- go to this player's position
-	m.pos.x = specM.pos.x
-	m.pos.y = specM.pos.y
-	m.pos.z = specM.pos.z
+	if spectateStar then
+		local star = find_steal_star()
+
+		if star ~= nil then
+			m.pos.x = star.oPosX
+			m.pos.y = star.oPosY
+			m.pos.z = star.oPosZ
+		else
+			spectateStar = false
+		end
+	else
+		m.pos.x = specM.pos.x
+		m.pos.y = specM.pos.y
+		m.pos.z = specM.pos.z
+	end
 end
 
 hook_mario_action(ACT_SPECTATE, act_spectate)
