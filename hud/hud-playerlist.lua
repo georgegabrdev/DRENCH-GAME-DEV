@@ -416,22 +416,6 @@ function M.render_playerlist()
 				local rowYPrev = baseYPrev + ((idx - 1) * rowSpacing)
 				local rowYCurr = baseYCurr + ((idx - 1) * rowSpacing)
 
-				-- zebra striping
-				if (idx - 1) % 2 == 0 then
-					djui_hud_set_color(0, 0, 0, math.floor(30 * tCurr))
-					HU.djui_hud_render_rect_rounded_interpolated(
-						x + 10,
-						rowYPrev - 6,
-						width - 120,
-						rowSpacing + 6,
-						x + 10,
-						rowYCurr - 6,
-						width - 120,
-						rowSpacing + 6,
-						8
-					)
-				end
-
 				HU.render_player_head_interpolated(
 					pIndex,
 					x + 20,

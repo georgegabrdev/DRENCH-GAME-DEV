@@ -681,7 +681,7 @@ function mario_update(m)
 	end
 	if sMario.spectator then
 		local c = get_description_color({ r = 100, g = 100, b = 100 }, m.playerIndex)
-		network_player_set_description(np, "\\#c8c8c8\\Spectator", c.r / 2, c.g / 2, c.b / 2, 255)
+		network_player_set_description(np, "\\#c8c8c8\\Spectator", c.r, c.g, c.b, 255)
 	elseif gGlobalSyncTable.gameState == GAME_STATE_LOBBY then
 		if sMario.ready then
 			highlight = true
