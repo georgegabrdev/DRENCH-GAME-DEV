@@ -348,7 +348,6 @@ function M.render_playerlist()
 		local title = "Players:" .. " " .. playerCount .. "/" .. tostring(MAX_PLAYERS)
 
 		djui_hud_print_text_interpolated(title, x + 20, titleYPrev, 1, x + 20, titleYCurr, 1)
-
 		djui_hud_set_color(200, 255, 255, opacity)
 		djui_hud_print_text_interpolated("Name", x + 55, headerYPrev, 0.7, x + 55, headerYCurr, 0.7)
 		djui_hud_print_text_interpolated("Description", x + 250, headerYPrev, 0.7, x + 250, headerYCurr, 0.7)

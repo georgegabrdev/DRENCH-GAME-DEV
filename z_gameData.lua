@@ -1268,36 +1268,29 @@ GAME_MODE_DATA = {
 		allowPvpFunc = function(attacker, victim, interaction)
 			local sAttacker = gPlayerSyncTable[attacker.playerIndex]
 			local sVictim = gPlayerSyncTable[victim.playerIndex]
-			if sAttacker.murderIsSheriff == false and sAttacker.murderIsMurderer == false then
-				return false
-			elseif
-				sAttacker.murderIsSheriff == true
-				and sVictim.murderIsSheriff == false
-				and sVictim.murderIsMurderer == false
-			then
+
+			if not sAttacker.murderIsSheriff and not sAttacker.murderIsMurderer then
+				return true
+			end
+
+			if sAttacker.murderIsSheriff and not sVictim.murderIsSheriff and not sVictim.murderIsMurderer then
 				eliminate_mario(attacker)
 				gGlobalSyncTable.sheriffDied = true
-				gGlobalSyncTable.sheriffDPosX = attacker.pos.x
-				gGlobalSyncTable.sheriffDPosY = attacker.pos.y
-				gGlobalSyncTable.sheriffDPosZ = attacker.pos.z
-				sAttacker.earnedPoints = 0
-				return false
-			elseif sAttacker.murderIsSheriff == true and sVictim.murderIsMurderer == true then
-				gGlobalSyncTable.murdererDied = true
-				eliminate_mario(victim)
-			elseif
-				sAttacker.murderIsMurderer == true
-				and sVictim.murderIsMurderer == false
-				and sVictim.murderIsSheriff == false
-			then
-				eliminate_mario(victim)
-			elseif sAttacker.murderIsMurderer == true and sVictim.murderIsSheriff == true then
-				eliminate_mario(victim)
-				gGlobalSyncTable.sheriffDied = true
-				gGlobalSyncTable.sheriffDPosX = victim.pos.x
-				gGlobalSyncTable.sheriffDPosY = victim.pos.y
-				gGlobalSyncTable.sheriffDPosZ = victim.pos.z
+				return true
 			end
+
+			if sAttacker.murderIsSheriff and sVictim.murderIsMurderer then
+				eliminate_mario(victim)
+				gGlobalSyncTable.murdererDied = true
+				return true
+			end
+
+			if sAttacker.murderIsMurderer and not sVictim.murderIsMurderer then
+				eliminate_mario(victim)
+				return true
+			end
+
+			return true
 		end,
 		hudRenderFunc = function(screenWidth, screenHeight, sideBarLines, lengthLimit)
 			local gData = GAME_MODE_DATA[gGlobalSyncTable.gameMode or 0]
@@ -1700,6 +1693,103 @@ GAME_MODE_DATA = {
 					o.oMoveAngleYaw = math.random(0, 65535)
 				end)
 			end
+		end,
+	},
+	[GAME_MODE_BALLOON_MADNESS] = {
+		name = "Balloon Madness",
+		desc = translate("desc_balloon_madness"),
+		level = { LEVEL_TOAD_TOWN, LEVEL_KOOPA_KEEP, LEVEL_LIGHTS_OUT, LEVEL_DS_FORT },
+		interact = PLAYER_INTERACTIONS_PVP, -- so invulnerability frames exist
+		kbStrength = 15,
+		music = "quick",
+		maxTime = 300 * 30, -- 5 minutes max
+		fasterActions = true,
+		doEliminationPoints = true,
+
+		startingSetup = function()
+			for i = 0, MAX_PLAYERS - 1 do
+				gPlayerSyncTable[i].balloons = 3
+				for balloon = 1, 3 do
+					spawn_object_no_rotate(id_bhvBalloon, E_MODEL_BALLOON, 0, 0, 0, function(o)
+						o.oBehParams = (i << 8) | balloon
+					end, false)
+				end
+			end
+		end,
+
+		hostUpdateFunc = function()
+			local alivePlayers = 0
+			for_each_connected_player(function(index)
+				local sMario = gPlayerSyncTable[index]
+				if not sMario.eliminated then
+					alivePlayers = alivePlayers + 1
+				end
+			end)
+			if alivePlayers <= 1 then
+				return true
+			end
+		end,
+
+		marioUpdateFunc = function(m) -- full health, no incidental deaths
+			m.health = 0x880
+			sonic_set_full_rings(m.playerIndex)
+		end,
+
+		onPvpFunc = function(attacker, victim, interaction)
+			local sVictim = gPlayerSyncTable[victim.playerIndex]
+			local sAttacker = gPlayerSyncTable[attacker.playerIndex]
+
+			victim.hurtCounter = 0
+			attacker.hurtCounter = 0
+
+			if sVictim.team == 0 or sAttacker.team ~= sVictim.team then
+				if sVictim.balloons and sVictim.balloons > 0 then
+					sVictim.balloons = sVictim.balloons - 1
+					play_sound(SOUND_GENERAL_BOING1, gGlobalSoundSource) -- pop
+
+					if attacker.playerIndex == 0 then
+						djui_chat_message_create(
+							"\\#ffff50\\Pop! "
+								.. gNetworkPlayers[victim.playerIndex].name
+								.. " has "
+								.. sVictim.balloons
+								.. " balloon(s) left"
+						)
+					end
+					if victim.playerIndex == 0 and attacker.playerIndex ~= 0 then
+						djui_chat_message_create("\\#ff5050\\Your balloon popped! (" .. sVictim.balloons .. " left)")
+					end
+
+					victim.invincTimer = 30 -- brief mercy invuln after a pop
+
+					if sVictim.balloons <= 0 then
+						eliminate_mario(victim)
+					end
+				end
+			end
+		end,
+
+		rejoinFunc = function(sMario) -- mid-round joiners get full balloons back
+			if sMario.balloons == nil or sMario.balloons <= 0 then
+				sMario.balloons = 3
+			end
+		end,
+
+		descFunc = function(index)
+			if gGlobalSyncTable.gameState ~= GAME_STATE_ACTIVE then
+				return
+			end
+			local sMario = gPlayerSyncTable[index]
+			if sMario.eliminated then
+				return
+			end
+			return tostring(sMario.balloons or 0), false, true -- desc, highlight, yellow
+		end,
+
+		hudRenderFunc = function(screenWidth, screenHeight, sideBarLines, lengthLimit)
+			local sMario = gPlayerSyncTable[gMarioStates[0].playerIndex]
+			add_line_to_table(sideBarLines, string.format("\\#7ad3ff\\Balloons: %d", sMario.balloons or 0), lengthLimit)
+			return true
 		end,
 	},
 }

@@ -1,4 +1,4 @@
--- name: \\#00ffff\\Drench Game DX v1.2.8 [WIP]
+-- name: \\#00ffff\\Drench Game DX v1.2.8.1 [WIP]
 -- description: Squid Game in Mario 64!\n\nCommissioned by Drenchy\nInspired by Dani's \"Crab Game\"\n\nProgramming: EmilyEmmi\n\nMaps: biobak, EmilyEmmi, Woissil\n\nSoundtrack: murioz, Awesome Seal Guy (YT)\n\nVoice Acting:\nEspi as Toad\nSqueex as Mingle Callout\nTrashcam as Waluigi\n\nAds: Squeex's Community\n\nSpecial Thanks: Squishy
 -- category: gamemode
 -- incompatible: gamemode
@@ -31,8 +31,9 @@ GAME_MODE_RUN = 14
 GAME_MODE_VIRUS = 15
 GAME_MODE_SIMON = 16
 GAME_MODE_BOMB_THROWER = 17
-GAME_MODE_DUEL = 18 -- needs to be at the end due to its special nature
-GAME_MODE_MAX = 19
+GAME_MODE_BALLOON_MADNESS = 18
+GAME_MODE_DUEL = 19 -- needs to be at the end due to its special nature
+GAME_MODE_MAX = 20
 
 TEAM_SELECTION_RANDOM = 0
 TEAM_SELECTION_HOST = 1
@@ -176,6 +177,7 @@ for i = 0, MAX_PLAYERS - 1 do
 	sMario.murderIsSheriff = false
 	sMario.rSelectedNumber = 1
 	sMario.virus = false
+	sMario.balloons = 3
 	sMario.victory = false
 	sMario.winAwarded = false
 	sMario.validForDuel = false
@@ -211,6 +213,7 @@ function load_on_sync()
 	sMario.murderIsSheriff = false
 	sMario.rSelectedNumber = 1
 	sMario.virus = false
+	sMario.balloons = 3
 	sMario.victory = false
 	sMario.winAwarded = false
 	sMario.validForDuel = gGlobalSyncTable.allDuel
