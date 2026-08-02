@@ -66,7 +66,7 @@ end
 
 function M.render_main_hud()
 	djui_hud_set_resolution(RESOLUTION_N64)
-	djui_hud_set_font(FONT_SPECIAL)
+	djui_hud_set_font(FONT_NORMAL)
 
 	-- reset score menu fields
 	if gGlobalSyncTable.gameState ~= GAME_STATE_SCORES then
@@ -109,6 +109,7 @@ function M.render_main_hud()
 		end
 	elseif gGlobalSyncTable.gameState == GAME_STATE_RULES then
 		local gData = GAME_MODE_DATA[gGlobalSyncTable.gameMode]
+		djui_hud_set_font(FONT_NORMAL)
 		add_line_to_table(sideBarLines, "\\#ffff50\\" .. gData.name, lengthLimit)
 		if gGlobalSyncTable.eliminationMode then
 			table.insert(sideBarLines, "\\#ff5050\\Elimination Mode")
@@ -245,6 +246,7 @@ function M.render_main_hud()
 		end
 	elseif gGlobalSyncTable.gameState == GAME_STATE_ACTIVE then
 		local gData = GAME_MODE_DATA[gGlobalSyncTable.gameMode]
+		djui_hud_set_font(FONT_NORMAL)
 		add_line_to_table(sideBarLines, "\\#ffff50\\" .. gData.name, lengthLimit)
 		if gGlobalSyncTable.eliminationMode then
 			table.insert(sideBarLines, "\\#ff5050\\Elimination Mode")
@@ -341,7 +343,7 @@ function M.render_main_hud()
 			djui_hud_set_color(0, 0, 0, 120)
 			HU.djui_hud_render_rect_rounded(lbX - lbPad, lbY - lbPad, lbWidth + lbPad * 2, lbTotalH, 10 * lbScale)
 
-			djui_hud_set_font(FONT_SPECIAL)
+			djui_hud_set_font(FONT_NORMAL)
 			local headerText = "\\#ffff50\\RANKINGS"
 			local hw = djui_hud_measure_text(remove_color(headerText)) * lbScale
 			djui_hud_print_text_with_color_and_outline(headerText, lbX + (lbWidth - hw) / 2, lbY, lbScale, 255, 2)

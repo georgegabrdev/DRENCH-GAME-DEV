@@ -69,6 +69,8 @@ return {
 
 	desc_bombthrower = "There's Bob-ombs falling from the sky! If you lose all your health, you lose the minigame! At the end of each round, coins will spawn in the middle of the stage. Survive the longest!",
 
+	desc_hot_ring = "Stay inside the ring! If you step outside, you'll lose health. The ring keeps shrinking, and you can push others out! Win by being the last one standing!",
+
 	minigame_text = "Minigame ",
 
 	spectate_text = "Spectate",

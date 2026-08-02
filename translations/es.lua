@@ -73,6 +73,8 @@ return {
 
 	desc_bombthrower = "¡Hay Bob-ombas cayendo del cielo! Si pierdes toda tu vida, perderás el minijuego. Al final de cada ronda, aparecerán monedas en el centro del escenario. ¡Sobrevive el mayor tiempo posible!",
 
+	desc_hot_ring = "Mantente dentro del anillo! Si te quedas fuera, perderás vida. El anillo se va haciendo cada vez más pequeño, además de que puedes empujar a los demás para sacarlos del anillo! Gana el que sobreviva!",
+
 	minigame_text = "Minijuego ",
 
 	spectate_text = "Espectador",

@@ -1,4 +1,4 @@
--- name: \\#00ffff\\Drench Game DX v1.2.8.1 [WIP]
+-- name: \\#00ffff\\Drench Game DX v1.3 [WIP]
 -- description: Squid Game in Mario 64!\n\nCommissioned by Drenchy\nInspired by Dani's \"Crab Game\"\n\nProgramming: EmilyEmmi\n\nMaps: biobak, EmilyEmmi, Woissil\n\nSoundtrack: murioz, Awesome Seal Guy (YT)\n\nVoice Acting:\nEspi as Toad\nSqueex as Mingle Callout\nTrashcam as Waluigi\n\nAds: Squeex's Community\n\nSpecial Thanks: Squishy
 -- category: gamemode
 -- incompatible: gamemode
@@ -32,8 +32,9 @@ GAME_MODE_VIRUS = 15
 GAME_MODE_SIMON = 16
 GAME_MODE_BOMB_THROWER = 17
 GAME_MODE_BALLOON_MADNESS = 18
-GAME_MODE_DUEL = 19 -- needs to be at the end due to its special nature
-GAME_MODE_MAX = 20
+GAME_MODE_HOT_RING = 19
+GAME_MODE_DUEL = 20 -- needs to be at the end due to its special nature
+GAME_MODE_MAX = 21
 
 TEAM_SELECTION_RANDOM = 0
 TEAM_SELECTION_HOST = 1
@@ -53,6 +54,7 @@ LEVEL_KOOPA_KEEP =
 	level_register("level_bowser_castle_entry", COURSE_NONE, "Koopa Keep", "koopakeep", 28000, 0x28, 0x28, 0x28)
 LEVEL_DS_FORT = level_register("level_fort_entry", COURSE_NONE, "DS Fort", "fort", 28000, 0x28, 0x28, 0x28)
 LEVEL_STAIR = level_register("level_stair_entry", COURSE_NONE, "Stairway", "stair", 28000, 0x28, 0x28, 0x28)
+LEVEL_DOUGHNUT = level_register("level_doughnut_entry", COURSE_NONE, "Doughnut", "doughnut", 28000, 0x28, 0x28, 0x28)
 gLevelValues.entryLevel = LEVEL_LOBBY
 warp_to_level(LEVEL_LOBBY, 1, 0)
 

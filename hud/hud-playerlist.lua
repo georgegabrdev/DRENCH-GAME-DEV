@@ -226,6 +226,7 @@ end
 function M.render_playerlist()
 	gServerSettings.enablePlayerList = 0
 	local prevSwitchTimer = switchTimer
+	djui_hud_set_font(FONT_SPECIAL)
 
 	update_switch_anim()
 

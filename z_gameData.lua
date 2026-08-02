@@ -555,7 +555,7 @@ GAME_MODE_DATA = {
 		descElim = translate("desc_elim_duel"),
 		descTeams = translate("desc_team_duel"),
 		descTeamsElim = translate("desc_team_elim_duel"),
-		level = LEVEL_DUEL,
+		level = { LEVEL_DUEL, LEVEL_DOUGHNUT },
 		interact = PLAYER_INTERACTIONS_PVP,
 		maxTime = -1, -- NO max time
 		roundTime = 63 * 30, -- 1:03 (3 is for the countdown)
@@ -1268,28 +1268,23 @@ GAME_MODE_DATA = {
 		allowPvpFunc = function(attacker, victim, interaction)
 			local sAttacker = gPlayerSyncTable[attacker.playerIndex]
 			local sVictim = gPlayerSyncTable[victim.playerIndex]
-
 			if not sAttacker.murderIsSheriff and not sAttacker.murderIsMurderer then
 				return true
 			end
-
 			if sAttacker.murderIsSheriff and not sVictim.murderIsSheriff and not sVictim.murderIsMurderer then
 				eliminate_mario(attacker)
 				gGlobalSyncTable.sheriffDied = true
 				return true
 			end
-
 			if sAttacker.murderIsSheriff and sVictim.murderIsMurderer then
 				eliminate_mario(victim)
 				gGlobalSyncTable.murdererDied = true
 				return true
 			end
-
 			if sAttacker.murderIsMurderer and not sVictim.murderIsMurderer then
 				eliminate_mario(victim)
 				return true
 			end
-
 			return true
 		end,
 		hudRenderFunc = function(screenWidth, screenHeight, sideBarLines, lengthLimit)
@@ -1792,6 +1787,59 @@ GAME_MODE_DATA = {
 			return true
 		end,
 	},
+	[GAME_MODE_HOT_RING] = {
+		name = "Hot Ring",
+		desc = translate("desc_hot_ring"),
+		level = {
+			LEVEL_TOAD_TOWN,
+			LEVEL_KOOPA_KEEP,
+			LEVEL_LIGHTS_OUT,
+			LEVEL_DS_FORT,
+		},
+		music = "stealth",
+		firstRoundTime = 1350,
+		roundTime = 750,
+		maxRounds = 3,
+		kbStrength = 22,
+		interact = PLAYER_INTERACTIONS_SOLID,
+		doEliminationPoints = true,
+		showHealth = true,
+		marioUpdateFunc = function(m)
+			if m.playerIndex ~= 0 then
+				return
+			end
+			local centerX, centerZ = 0, 0
+			if gGlobalSyncTable.gameLevel == LEVEL_KOOPA_KEEP then
+				centerX, centerZ = 1575, -2000
+			elseif gGlobalSyncTable.gameLevel == LEVEL_DS_FORT then
+				centerX, centerZ = 1000, 1000
+			end
+			local radius = math.max(400, 4500 - gGlobalSyncTable.gameTimer * 1.5)
+			local dist = math.sqrt((m.pos.x - centerX) ^ 2 + (m.pos.z - centerZ) ^ 2)
+			if radius < dist then
+				m.health = m.health - 10
+			end
+			if m.action == ACT_LAVA_BOOST then
+				set_to_spawn_pos(m, true)
+				m.hurtCounter = 4
+			end
+			for var1 = 1, 410 do
+				if gGlobalSyncTable.gameTimer == var1 * 9 then
+					for var2 = 1, 64 do
+						local angles = var2 * 65536 / 64
+						spawn_non_sync_object(
+							id_bhvSparkle,
+							E_MODEL_RED_FLAME,
+							centerX + radius * sins(angles),
+							m.pos.y + 100,
+							centerZ + radius * coss(angles),
+							nil
+						)
+					end
+				end
+			end
+		end,
+	},
 }
 
 LEVEL_SPAWN_DATA = {
@@ -1913,6 +1961,15 @@ LEVEL_SPAWN_DATA = {
 		spawnPos = {
 			x = 0,
 			y = -4000,
+			z = 0,
+		},
+		spawnDist = 2000,
+	},
+
+	[LEVEL_DOUGHNUT] = {
+		spawnPos = {
+			x = 0,
+			y = 0,
 			z = 0,
 		},
 		spawnDist = 2000,

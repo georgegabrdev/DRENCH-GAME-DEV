@@ -72,6 +72,8 @@ return {
 
 	desc_bombthrower = "Bob-ombs estão caindo do céu! Se você perder toda a sua vida, perderá o minijogo! No final de cada rodada, moedas aparecerão no centro do cenário. Sobreviva o máximo de tempo possível!",
 
+	desc_hot_ring = "Fique dentro do círculo! Se você sair dele, perderá vida. O círculo continua encolhendo, e você pode empurrar os outros para fora! Vença sendo o último sobrevivente!",
+
 	minigame_text = "Minijogo ",
 
 	spectate_text = "Assistir",

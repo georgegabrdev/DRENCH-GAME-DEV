@@ -72,6 +72,8 @@ return {
 
 	desc_bombthrower = "Des Bob-ombs tombent du ciel ! Si vous perdez toute votre vie, vous perdez le mini-jeu ! À la fin de chaque manche, des pièces apparaîtront au centre de l'arène. Survivez le plus longtemps possible !",
 
+	desc_hot_ring = [[Restez à l'intérieur de l'anneau ! Si vous en sortez, vous perdrez de la vie. L'anneau rétrécit constamment, et vous pouvez pousser les autres à l'extérieur ! Gagnez en étant le dernier survivant !]],
+
 	minigame_text = "Mini-jeu ",
 
 	spectate_text = "Observer",

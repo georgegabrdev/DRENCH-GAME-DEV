@@ -387,6 +387,8 @@ function render_music_popup()
 	local yPrev = hiddenY + (shownY - hiddenY) * tPrev
 	local yCurr = hiddenY + (shownY - hiddenY) * tCurr
 
+	djui_hud_set_font(FONT_NORMAL)
+
 	-- Shadow
 	djui_hud_set_color(0, 0, 0, math.floor(90 * tCurr))
 	HU.djui_hud_render_rect_rounded_interpolated(x + 2, yPrev + 2, w, h, x + 2, yCurr + 2, w, h, 18)
