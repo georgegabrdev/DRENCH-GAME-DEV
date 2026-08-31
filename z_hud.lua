@@ -166,14 +166,14 @@ end
 menu_data = {
 	[1] = {
 		{
-			"Game Settings",
+			translate("game_settings"),
 			function()
 				enter_menu(2)
 			end,
 			true,
 		},
 		{
-			"Select Next Minigame",
+			translate("select_next_minigame"),
 			function()
 				enter_menu(3)
 			end,
@@ -193,14 +193,14 @@ menu_data = {
 			end,
 		},
 		{
-			"Modifiers",
+			translate("modifiers"),
 			function()
 				enter_menu(7)
 			end,
 			true,
 		},
 		{
-			"Force Start Game",
+			translate("force_start_game"),
 			function()
 				gGlobalSyncTable.forceStart = not gGlobalSyncTable.forceStart
 				if gGlobalSyncTable.forceStart then
@@ -213,13 +213,13 @@ menu_data = {
 						end
 					end)
 					if validPlayers ~= 0 and (do_solo_debug() or validPlayers >= connectionsNeeded) then
-						djui_chat_message_create("\\#ffff50\\Starting the game...")
+						djui_chat_message_create("\\#ffff50\\" .. translate("starting_the_game"))
 					else
-						djui_chat_message_create("\\#ff5050\\Need at least 2 players!")
+						djui_chat_message_create("\\#ff5050\\" .. translate("need_at_least_2_players"))
 						gGlobalSyncTable.forceStart = false
 					end
 				else
-					djui_chat_message_create("\\#ff5050\\Canceled forced start.")
+					djui_chat_message_create("\\#ff5050\\" .. translate("canceled_forced_start"))
 				end
 			end,
 			true,
@@ -228,7 +228,7 @@ menu_data = {
 			end,
 		},
 		{
-			"Cancel Game",
+			translate("cancel_game"),
 			function()
 				if cancelTime >= get_time() - 5 then
 					gGlobalSyncTable.gameState = GAME_STATE_LOBBY
@@ -239,7 +239,7 @@ menu_data = {
 					cancelTime = 0
 					inMenu = false
 				else
-					djui_chat_message_create("\\#ff5050\\Are you sure? Press A again to continue.")
+					djui_chat_message_create("\\#ff5050\\" .. translate("are_you_sure"))
 					cancelTime = get_time()
 				end
 			end,
@@ -249,7 +249,7 @@ menu_data = {
 			end,
 		},
 		{
-			"Team",
+			translate("team"),
 			function(x)
 				gPlayerSyncTable[0].team = x
 			end,
@@ -277,7 +277,7 @@ menu_data = {
 			nameRef = teamNameRef,
 		},
 		{
-			"Open CS Menu",
+			translate("open_cs_menu"),
 			function()
 				charSelect.set_menu_open(true)
 				inMenu = false
@@ -288,7 +288,7 @@ menu_data = {
 			end,
 		},
 		{
-			"Personal Settings",
+			translate("personal_settings"),
 			function()
 				enter_menu(8)
 			end,
@@ -312,14 +312,14 @@ menu_data = {
 			false,
 		},
 		{
-			"Exit Menu",
+			translate("exit_menu"),
 			function()
 				inMenu = false
 			end,
 			false,
 		},
 		{
-			"CoopDX Menu",
+			translate("coopdx_menu"),
 			function()
 				djui_open_pause_menu()
 			end,
@@ -328,7 +328,7 @@ menu_data = {
 	},
 	[2] = {
 		{
-			"Game Mode Selection",
+			translate("game_mode_selection"),
 			function(x)
 				gGlobalSyncTable.gameModeSelection = x
 				gGlobalSyncTable.selectedMode = -1
@@ -341,7 +341,7 @@ menu_data = {
 			save = "gameModeSelection",
 		},
 		{
-			"Include All Player Duel",
+			translate("include_all_player_duel"),
 			function(x)
 				gGlobalSyncTable.includeAllDuel = (x == 1)
 			end,
@@ -353,11 +353,11 @@ menu_data = {
 			minNum = 0,
 			maxNum = 1,
 			runOnChange = true,
-			nameRef = { "\\#ff5050\\Off", "\\#50ff50\\On" },
+			nameRef = { translate("off"), translate("on") },
 			save = "includeAllDuel",
 		},
 		{
-			"Total Minigames",
+			translate("total_minigames"),
 			function(x)
 				gGlobalSyncTable.maxMiniGames = x
 			end,
@@ -371,7 +371,7 @@ menu_data = {
 			save = "maxMiniGames",
 		},
 		{
-			"Final Duel",
+			translate("final_duel"),
 			function(x)
 				gGlobalSyncTable.finalDuel = (x == 1)
 			end,
@@ -384,11 +384,11 @@ menu_data = {
 			minNum = 0,
 			maxNum = 1,
 			runOnChange = true,
-			nameRef = { "\\#ff5050\\Off", "\\#50ff50\\On" },
+			nameRef = { translate("off"), translate("on") },
 			save = "finalDuel",
 		},
 		{
-			"Elimination Mode",
+			translate("elimination_mode"),
 			function(x)
 				gGlobalSyncTable.eliminationMode = (x == 1)
 			end,
@@ -396,11 +396,11 @@ menu_data = {
 			minNum = 0,
 			maxNum = 1,
 			runOnChange = true,
-			nameRef = { "\\#ff5050\\Off", "\\#50ff50\\On" },
+			nameRef = { translate("off"), translate("on") },
 			save = "eliminationMode",
 		},
 		{
-			"Percent Ready to Start",
+			translate("percent_ready_to_start"),
 			function(x)
 				gGlobalSyncTable.percentToStart = x
 			end,
@@ -412,7 +412,7 @@ menu_data = {
 			save = "percentToStart",
 		},
 		{
-			"Teams",
+			translate("teams"),
 			function(x)
 				gGlobalSyncTable.teamCount = x
 				if x == 0 then
@@ -429,11 +429,11 @@ menu_data = {
 			maxNum = 8,
 			excludeNum = 1,
 			runOnChange = true,
-			nameRef = { "\\#ff5050\\Off" },
+			nameRef = { translate("off") },
 			save = "teamCount",
 		},
 		{
-			"Team Selection",
+			translate("team_selection"),
 			function(x)
 				gGlobalSyncTable.teamSelection = x
 				if x == TEAM_SELECTION_RANDOM then
@@ -448,11 +448,11 @@ menu_data = {
 			minNum = 0,
 			maxNum = 2,
 			runOnChange = true,
-			nameRef = { "Random", "Host's Choice", "Players' Choice" },
+			nameRef = { translate("random_teams"), translate("hosts_choice"), translate("players_choice") },
 			save = "teamSelection",
 		},
 		{
-			"Select Teams...",
+			translate("select_teams"),
 			function()
 				enter_menu(6)
 			end,
@@ -465,7 +465,7 @@ menu_data = {
 	[3] = { buildFunc = build_game_mode_menu }, -- auto built
 	[4] = {
 		{
-			"Total Duelers",
+			translate("total_duelers"),
 			function(x)
 				local secondToLastOption = menu_data[4][#menu_data[4] - 1]
 				local lastOption = menu_data[4][#menu_data[4]]
@@ -515,7 +515,7 @@ menu_data = {
 			maxNum = MAX_PLAYERS - 1,
 		},
 		{
-			"\\#50ff50\\Confirm Duelers",
+			"\\#50ff50\\" .. translate("confirm_duelers"),
 			function()
 				for i = 0, MAX_PLAYERS - 1 do
 					local sMario = gPlayerSyncTable[i]
@@ -541,7 +541,7 @@ menu_data = {
 			end,
 		},
 		{
-			"\\#ffff50\\All Player Duel",
+			"\\#ffff50\\" .. translate("all_player_duel"),
 			function()
 				gGlobalSyncTable.selectedMode = GAME_MODE_DUEL
 				gGlobalSyncTable.allDuel = true
@@ -615,7 +615,11 @@ menu_data = {
 			minNum = 0,
 			maxNum = 1,
 			nameRef = { "\\#ff5050\\Off", "\\#50ff50\\On" },
+			updateNum = function(button)
+				button.currNum = is_modifier_active(modifierBits.superSpeed) and 1 or 0
+			end,
 		},
+
 		{
 			"High Gravity",
 			function(x)
@@ -627,7 +631,11 @@ menu_data = {
 			minNum = 0,
 			maxNum = 1,
 			nameRef = { "\\#ff5050\\Off", "\\#50ff50\\On" },
+			updateNum = function(button)
+				button.currNum = is_modifier_active(modifierBits.highGravity) and 1 or 0
+			end,
 		},
+
 		{
 			"Low Gravity",
 			function(x)
@@ -639,7 +647,11 @@ menu_data = {
 			minNum = 0,
 			maxNum = 1,
 			nameRef = { "\\#ff5050\\Off", "\\#50ff50\\On" },
+			updateNum = function(button)
+				button.currNum = is_modifier_active(modifierBits.lowGravity) and 1 or 0
+			end,
 		},
+
 		{
 			"Inverted Controls",
 			function(x)
@@ -651,7 +663,11 @@ menu_data = {
 			minNum = 0,
 			maxNum = 1,
 			nameRef = { "\\#ff5050\\Off", "\\#50ff50\\On" },
+			updateNum = function(button)
+				button.currNum = is_modifier_active(modifierBits.invertedControls) and 1 or 0
+			end,
 		},
+
 		{
 			"Instakill",
 			function(x)
@@ -663,7 +679,11 @@ menu_data = {
 			minNum = 0,
 			maxNum = 1,
 			nameRef = { "\\#ff5050\\Off", "\\#50ff50\\On" },
+			updateNum = function(button)
+				button.currNum = is_modifier_active(modifierBits.instaKill) and 1 or 0
+			end,
 		},
+
 		{
 			"Z Button Challenge",
 			function(x)
@@ -675,7 +695,11 @@ menu_data = {
 			minNum = 0,
 			maxNum = 1,
 			nameRef = { "\\#ff5050\\Off", "\\#50ff50\\On" },
+			updateNum = function(button)
+				button.currNum = is_modifier_active(modifierBits.ZBC) and 1 or 0
+			end,
 		},
+
 		{
 			"B Button Challenge",
 			function(x)
@@ -687,8 +711,12 @@ menu_data = {
 			minNum = 0,
 			maxNum = 1,
 			nameRef = { "\\#ff5050\\Off", "\\#50ff50\\On" },
+			updateNum = function(button)
+				button.currNum = is_modifier_active(modifierBits.BBC) and 1 or 0
+			end,
 		},
 	},
+
 	[8] = {
 		{
 			translate("music_text"),
@@ -745,13 +773,47 @@ menu_data = {
 			localSave = true,
 		},
 	},
+	[9] = {
+		{
+			"Creator",
+			function() end,
+			desc = "Georgegabr1",
+		},
+		{
+			"Minigames",
+			function() end,
+			desc = "Drench Game +",
+		},
+		{
+			"Ideas",
+			function() end,
+			desc = "SCOPIC64",
+		},
+	},
 }
 
 local TEX_DRENCH = get_texture_info("drench_icon")
 
+local function update_modifier_menu()
+	local menu = menu_data[7]
+	if not menu then
+		return
+	end
+
+	for _, button in ipairs(menu) do
+		if button.updateNum then
+			button.updateNum(button)
+		end
+	end
+end
+
 function render_menu()
+	if menuID == 7 then
+		update_modifier_menu()
+	end
+
 	djui_hud_set_resolution(RESOLUTION_DJUI)
-	djui_hud_set_font(FONT_NORMAL)
+	djui_hud_set_font(djui_menu_get_font())
 
 	local screenWidth = djui_hud_get_screen_width()
 	local screenHeight = djui_hud_get_screen_height()

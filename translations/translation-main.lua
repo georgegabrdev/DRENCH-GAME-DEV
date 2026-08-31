@@ -130,6 +130,17 @@ function translate_simon_do()
 	end
 end
 
+function get_hint(index)
+	local code = language or "en"
+	local hint_key = "hint_" .. tostring(index)
+
+	if LOADED_TRANSLATIONS[code] and LOADED_TRANSLATIONS[code][hint_key] then
+		return LOADED_TRANSLATIONS[code][hint_key]
+	end
+
+	return LOADED_TRANSLATIONS["en"][hint_key] or ""
+end
+
 function translate(id)
 	local code = language or "en"
 

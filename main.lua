@@ -1,4 +1,4 @@
--- name: \\#00ffff\\Drench Game DX v1.3 [WIP]
+-- name: \\#00ffff\\Drench Game DX v1.3.1
 -- description: Squid Game in Mario 64!\n\nCommissioned by Drenchy\nInspired by Dani's \"Crab Game\"\n\nProgramming: EmilyEmmi\n\nMaps: biobak, EmilyEmmi, Woissil\n\nSoundtrack: murioz, Awesome Seal Guy (YT)\n\nVoice Acting:\nEspi as Toad\nSqueex as Mingle Callout\nTrashcam as Waluigi\n\nAds: Squeex's Community\n\nSpecial Thanks: Squishy
 -- category: gamemode
 -- incompatible: gamemode
@@ -1014,7 +1014,7 @@ function update()
 		end
 
 		if gGlobalSyncTable.gameMode == GAME_MODE_MINGLE then
-			currentMusic = set_mingle_music()
+			currentMusic = "mingle"
 		end
 
 		-- dynamic track (slider madness and slider casino):
@@ -1426,7 +1426,6 @@ function update()
 			end
 		end
 	elseif gGlobalSyncTable.gameState == GAME_STATE_MINI_END then
-		reset_mingle_music()
 		gGlobalSyncTable.gameTimer = gGlobalSyncTable.gameTimer + 1
 		local endTime = 120
 		if gGlobalSyncTable.gameMode == GAME_MODE_DUEL then

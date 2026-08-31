@@ -1,5 +1,6 @@
 local HU = require("../hud-utils")
 local MWI = require("../tweaks/c-mWins")
+local TRANSLATIONS = require("../translations/translation-main")
 local M = {}
 
 -- all hud stuff
@@ -22,32 +23,6 @@ local CountdownAnim = {
 local countdownTimer = 0
 local hudHint = -1
 local gaveMiniWin = false
-local hud_hints = {
-	"Wah-hah! Wario thinks you should punch your opponents to get them out! Show no mercy!",
-	"It's a me, Mario! Have you seen the-a gold pot? That must be a lot-a coins! Wowza!",
-	"It's me, Toad! Listen, I've played these games before! If you have Elimination Mode active... you'll be gone forever if you're eliminated! The horror! AAAAA!",
-	"Hello, I'm Luigi and I'm here to tell you about Choose Mode. The host can choose any game they'd like to play, including setting up 1v1 Duel games. I highly recommend you give the option a chance.",
-	'Wah, that big Toad in Red Light, Green Light is a CHEATER! He\'ll try and fake you out, and will sometimes turn WHILE saying "Green Light"! Wah, only I should be allowed to cheat!',
-	"Toad again! We're fighting each other with these coins looming above us... it must be a metaphor for something! I just know it!",
-	"Wario's favorite game is Glass Bridge! There's NO way to tell which glass pane is safe, even if you've worked in a glass factory! I always wait for someone else to go to see which is the right one, wah ha!",
-	"This mod was a collaboration with many people, too many to list in these tips! But most of the programming was done by EmilyEmmi, who is very cool. These tips are not biased, of course.",
-	"Wah, they say that not riding the carousel in Mingle is \"cheating\", eh? I'll throw my opponents off and get them in trouble! How's that for cheating, huh?",
-	"Star Steal is one of my-a personal favorites! You move slower while holding the Super Star, so you'll need to-a dodge, ha-ha!",
-	"It's Toad! I dread playing Bomb Tag... I always get hit at the last second! The players holding Bob-Ombs run faster, so my advice is to try and flank them! Screaming also helps! AAAAA!",
-	'Hello, I\'m Luigi and I find the minigame "King Of The Hill" to be an enjoyable experience. I myself am against fighting though, so I just wait until the coast is clear.',
-	"I'ma Wario! Want to crush your enemies in Duel or Lights Out? Use the Ground Pound! It deals BIG damage if you can time it right! Give me a cut of the money though, since I invented it!",
-	"Every music track except the one for Mingle was created by murioz! Without her contributions, you'd be listening to Bob-Omb Battlefield over and over...",
-	'The lobby, Mingle, Glass Bridge, and Red Light, Green Light maps were created by biobak, who is also working on the upcoming rom hack "Return To Yoshi\'s Island"!',
-	"The King Of The Hill, Toad Town, and Koopa Keep maps were created by Woissil on short notice. Whomp's Fortress was used as a debug map, and you could fall off and lose instantly... it was not fun.",
-	"The Duels map was created by me, EmilyEmmi. That's why it's so barebones compared to the others...",
-	"I'M TOAD AND I HATE LIGHTS OUT! I try to climb the chains to get away, but they're too slippery and I fall and get hurt! OUCH!",
-	"Wah, I was looking into Bomb Tag, and I found out that IT'S RIGGED! They always give the Bob-Ombs to the players that have held them for the least amount of time! They must hate winners like me!",
-	"Hello, player. Have you noticed that some doors will refuse to open in Mingle? Apparently, less doors are available after the 3rd round. I hope you find this advice useful.",
-	"You have to look out for-a more than just players in Star Steal! If you fall into lava, you'll also lose the Star-a! Be careful!",
-	"I'ma Wario, and I'ma gonna win Duels with my exclusive info! You can get a full heal if you take out another player. It's the perfect strategy, since I'm the best brawler around!",
-	"This mod is brought to you by our (totally legit) sponsors from the Squeex YouTube community! You can see their ads on the monitor in the lobby.",
-	"This audio files used to take up 23.7 MB! It took ages to download. After Squishy trimmed and compressed all of the audio, this size was reduced to just over 2.5 MB. Wow...",
-}
 
 local function get_display_name(i)
 	local np = gNetworkPlayers[i]
@@ -66,7 +41,7 @@ end
 
 function M.render_main_hud()
 	djui_hud_set_resolution(RESOLUTION_N64)
-	djui_hud_set_font(FONT_NORMAL)
+	djui_hud_set_font(djui_menu_get_font())
 
 	-- reset score menu fields
 	if gGlobalSyncTable.gameState ~= GAME_STATE_SCORES then
@@ -109,7 +84,7 @@ function M.render_main_hud()
 		end
 	elseif gGlobalSyncTable.gameState == GAME_STATE_RULES then
 		local gData = GAME_MODE_DATA[gGlobalSyncTable.gameMode]
-		djui_hud_set_font(FONT_NORMAL)
+		djui_hud_set_font(djui_menu_get_font())
 		add_line_to_table(sideBarLines, "\\#ffff50\\" .. gData.name, lengthLimit)
 		if gGlobalSyncTable.eliminationMode then
 			table.insert(sideBarLines, "\\#ff5050\\Elimination Mode")
@@ -137,19 +112,8 @@ function M.render_main_hud()
 
 			if lastCountdownNumber ~= number then
 				lastCountdownNumber = number
-
-				CountdownAnim.time = 0
-				CountdownAnim.prevTime = 0
-
-				if number == 3 then
-					play_stream_sfx("three", gGlobalSoundSource)
-				elseif number == 2 then
-					play_stream_sfx("two", gGlobalSoundSource)
-				elseif number == 1 then
-					play_stream_sfx("one", gGlobalSoundSource)
-				elseif number == 0 then
-					play_stream_sfx("go", gGlobalSoundSource)
-				end
+				countdownTimer = 0
+				play_sound(SOUND_GENERAL2_SWITCH_TICK_FAST, gGlobalSoundSource)
 			end
 
 			local total = CountdownAnim.anim.timeEnter + CountdownAnim.anim.timeStay + CountdownAnim.anim.timeExit
@@ -246,7 +210,7 @@ function M.render_main_hud()
 		end
 	elseif gGlobalSyncTable.gameState == GAME_STATE_ACTIVE then
 		local gData = GAME_MODE_DATA[gGlobalSyncTable.gameMode]
-		djui_hud_set_font(FONT_NORMAL)
+		djui_hud_set_font(djui_menu_get_font())
 		add_line_to_table(sideBarLines, "\\#ffff50\\" .. gData.name, lengthLimit)
 		if gGlobalSyncTable.eliminationMode then
 			table.insert(sideBarLines, "\\#ff5050\\Elimination Mode")
@@ -343,7 +307,7 @@ function M.render_main_hud()
 			djui_hud_set_color(0, 0, 0, 120)
 			HU.djui_hud_render_rect_rounded(lbX - lbPad, lbY - lbPad, lbWidth + lbPad * 2, lbTotalH, 10 * lbScale)
 
-			djui_hud_set_font(FONT_NORMAL)
+			djui_hud_set_font(djui_menu_get_font())
 			local headerText = "\\#ffff50\\RANKINGS"
 			local hw = djui_hud_measure_text(remove_color(headerText)) * lbScale
 			djui_hud_print_text_with_color_and_outline(headerText, lbX + (lbWidth - hw) / 2, lbY, lbScale, 255, 2)
@@ -713,9 +677,9 @@ function M.render_main_hud()
 		end
 
 		if hudHint == -1 then
-			hudHint = math.random(1, #hud_hints)
+			hudHint = math.random(1, 24)
 		end
-		local text = hud_hints[hudHint]
+		local text = get_hint(hudHint)
 		local connectionsNeeded = 2
 		local validPlayers = 0
 		for_each_connected_player(function(index)
@@ -808,7 +772,7 @@ function M.render_main_hud()
 	end
 
 	if #modifiers > 0 then
-		djui_hud_set_font(FONT_NORMAL)
+		djui_hud_set_font(djui_menu_get_font())
 		local modScale = 0.25
 		local padding = 4
 		local lineHeight = 10

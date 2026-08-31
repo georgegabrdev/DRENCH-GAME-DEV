@@ -112,13 +112,6 @@ local musicData = {
 		musicName = "Attack of the Killer Queen - Deltarune",
 	},
 
-	sms = {
-		audio = audio_stream_load("music-sms.ogg"),
-		loop = true,
-		loopStart = 0,
-		musicName = "Super Mario Style",
-	},
-
 	finalOutro = {
 		audio = audio_stream_load("music-final-outro.ogg"),
 	},
@@ -135,10 +128,6 @@ soundData = {
 	playerCallout2 = audio_sample_load("sound-mingle-callout-2.ogg"),
 	playerCallout3 = audio_sample_load("sound-mingle-callout-3.ogg"),
 	playerCallout4 = audio_sample_load("sound-mingle-callout-4.ogg"),
-	three = audio_sample_load("sound-three.ogg"),
-	two = audio_sample_load("sound-two.ogg"),
-	one = audio_sample_load("sound-one.ogg"),
-	go = audio_sample_load("sound-go.ogg"),
 	select_menu = audio_sample_load("sound-select_menu.ogg"),
 	nuclearbomb = audio_sample_load("sound-nuclearbomb.ogg"),
 	explosion = audio_sample_load("sound-explosion.ogg"),
@@ -307,17 +296,6 @@ function set_music_frequency(newFrequency)
 	musicFrequency = newFrequency
 end
 
-function set_mingle_music()
-	if mingleMusic == nil then
-		mingleMusic = (math.random(10) == 1) and "sms" or "mingle"
-	end
-	return mingleMusic
-end
-
-function reset_mingle_music()
-	mingleMusic = nil
-end
-
 -- does this even work?
 function test_loop_point()
 	local thisMusic = musicData[currentMusic]
@@ -334,6 +312,9 @@ if DEBUG_MODE then
 end
 
 function render_music_popup()
+	if not musicPopupText or musicPopupText == "" then
+		return
+	end
 	local total = MusicAnim.anim.timeEnter + MusicAnim.anim.timeStay + MusicAnim.anim.timeExit
 
 	if MusicAnim.time <= 0 or MusicAnim.time > total then

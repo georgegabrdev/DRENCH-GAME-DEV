@@ -207,6 +207,22 @@ local function on_player_disconnected(m)
 	gPlayerSyncTable[m.playerIndex].tagId = 0
 end
 
+--[[local function on_player_connected(m)
+	djui_chat_message_create(
+		string.format(
+			"%s has won a game %d times!",
+			network_get_player_text_color_string(m.playerIndex),
+			gPlayerSyncTable[0].gameWins
+		)
+	)
+	djui_chat_message_create(
+		string.format(
+			"%s has won a minigame %d times!",
+			network_get_player_text_color_string(m.playerIndex),
+			gPlayerSyncTable[0].minigameWins
+		)
+	)
+end]]
 -------------
 --- HOOKS ---
 -------------
@@ -215,3 +231,4 @@ hook_event(HOOK_UPDATE, main_update)
 hook_event(HOOK_ON_CHAT_MESSAGE, on_chat_message)
 hook_event(HOOK_ON_SYNC_VALID, on_sync_valid)
 hook_event(HOOK_ON_PLAYER_DISCONNECTED, on_player_disconnected)
+--hook_event(HOOK_ON_PLAYER_CONNECTED, on_player_connected)
